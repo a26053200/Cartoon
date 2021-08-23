@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace URPToon
 {
-    public class URPToonShaderGUI : ShaderGUI
+    public class URPToonShaderGUI : BaseShaderGUI
     {
         #region Structs
 
@@ -46,7 +46,7 @@ namespace URPToon
         {
             //base.OnGUI(materialEditor, properties);
             
-            m_OutlineFoldout = ShaderGUIPrefs.GetFoldoutState(materialEditor, Styles.OutlineFold.text);
+            m_OutlineFoldout = GetFoldoutState(materialEditor, Styles.OutlineFold.text);
             
             //FindProperties
             m_IsFaseProp = FindProperty(Styles.IsFace, properties, false);
@@ -77,7 +77,7 @@ namespace URPToon
                     DrawOutlineProperties(materialEditor);
                     EditorGUILayout.Space();
                 }
-                ShaderGUIPrefs.SetFoldoutState(materialEditor, Styles.OutlineFold.text, m_OutlineFoldout, outlineFoldout);
+                SetFoldoutState(materialEditor, Styles.OutlineFold.text, m_OutlineFoldout, outlineFoldout);
                 EditorGUILayout.EndFoldoutHeaderGroup();
             }
         }
@@ -94,46 +94,8 @@ namespace URPToon
         }
         
         #endregion
-
-        
-        
-        
-        #region Drawers
-
-        private void DrawKeyword(MaterialEditor materialEditor, MaterialProperty materialProperty, string label)
-        {
-            Material material = materialEditor.target as Material;
-            EditorGUI.BeginChangeCheck();
-            materialEditor.ShaderProperty(materialProperty, label.IndexOf("_", StringComparison.Ordinal) != -1 ? label.Replace("_", "") : label);
-            if (EditorGUI.EndChangeCheck())
-                SetKeyword(material, materialProperty.name, material.GetFloat(materialProperty.name) == 1.0);
-        }
-        
-        private void DrawColorProperty(MaterialEditor materialEditor, MaterialProperty materialProperty, string label)
-        {
-            materialEditor.ColorProperty(materialProperty, label.IndexOf("_", StringComparison.Ordinal) != -1 ? label.Replace("_", "") : label);
-        }
-        
-        private void DrawSliderProperty(MaterialProperty materialProperty, string label, float leftValue, float rightValue)
-        {
-            EditorGUI.BeginChangeCheck();
-            var newValue = EditorGUILayout.Slider(label.IndexOf("_", StringComparison.Ordinal) != -1 ? label.Replace("_", "") : label, materialProperty.floatValue, leftValue, rightValue);
-            if (EditorGUI.EndChangeCheck())
-                materialProperty.floatValue = newValue;
-        }
-        
-        #endregion
         
         #region Keywords
-        
-        private void SetKeyword(Material material, string keyword, bool value)
-        {
-            if (value)
-                material.EnableKeyword(keyword);
-            else
-                material.DisableKeyword(keyword);
-        }
-
         private void SetMaterialKeywords(Material material)
         {
             // Reset

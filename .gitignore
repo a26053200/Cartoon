@@ -1,9 +1,11 @@
 
+.idea/
 Assets/Kyaru.meta
 Assets/Kyaru/
 Library/
 Logs/
 Temp/
+obj/
 UserSettings/
 *.csproj
 *.sln

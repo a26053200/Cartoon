@@ -24,7 +24,7 @@
         _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
         _OutlineThickness ("Outline Thickness", float) = 0.5
         _OutlineWidth ("Outline Width", float) = 0.5
-        [Toggle(_UseColor)] _UseColor ("UseVertexColor", Float) = 0.0
+        [ToggleOff] _UseColor ("UseVertexColor", Float) = 0.0
         
         [Header(heightCorrectMask)]
         _HeightCorrectMax ("HeightCorrectMax", float) = 1.6
@@ -79,7 +79,7 @@
             
             #pragma shader_feature_local_vertex _USESMOOTHNORMAL
             #pragma multi_compile_instancing
-            #pragma shader_feature _UseColor
+            #pragma shader_feature_local _UseColor
             
             #include "URPOutline.hlsl"
             //#include "URPToonOutlinePass.hlsl"
