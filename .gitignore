@@ -1,3 +1,9 @@
 
 Assets/Kyaru.meta
 Assets/Kyaru/
+Library/
+Logs/
+Temp/
+UserSettings/
+*.csproj
+*.sln
