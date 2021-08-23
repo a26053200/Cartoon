@@ -61,7 +61,7 @@ namespace URPToon
             DrawProperties(materialEditor);
             if (EditorGUI.EndChangeCheck())
             {
-                SetMaterialKeywords(materialEditor.target as Material);
+                //SetMaterialKeywords(materialEditor.target as Material);
             }
         }
 
@@ -89,7 +89,7 @@ namespace URPToon
             {
                 DrawColorProperty(materialEditor, m_OutlineColorProp, PropertyNames.OutlineColor);
                 DrawSliderProperty(m_OutlineThicknessProp, PropertyNames.OutlineThickness,0,5);
-                DrawKeyword(materialEditor, m_UseColorProp, PropertyNames.UseColor);
+                DrawKeyword(materialEditor, "_USE_VERTEX_COLOR", m_UseColorProp, PropertyNames.UseColor);
             }
         }
         

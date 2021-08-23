@@ -12,13 +12,13 @@ namespace URPToon
 
         #region Drawers
 
-        protected void DrawKeyword(MaterialEditor materialEditor, MaterialProperty materialProperty, string label)
+        protected void DrawKeyword(MaterialEditor materialEditor, string keyword, MaterialProperty materialProperty, string label)
         {
             Material material = materialEditor.target as Material;
             EditorGUI.BeginChangeCheck();
             materialEditor.ShaderProperty(materialProperty, GetDisplayShaderPropertyName(label));
             if (EditorGUI.EndChangeCheck())
-                SetKeyword(material, materialProperty.name, material.GetFloat(materialProperty.name) == 1.0);
+                SetKeyword(material, keyword, material.GetFloat(materialProperty.name) == 1.0);
         }
 
         protected void DrawColorProperty(MaterialEditor materialEditor, MaterialProperty materialProperty, string label)

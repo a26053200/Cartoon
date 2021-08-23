@@ -8,7 +8,7 @@ struct a2v
     float4 positionOS: POSITION;
     float4 normalOS: NORMAL;
     float4 tangentOS: TANGENT;
-    #ifdef _UseColor
+    #ifdef _USE_VERTEX_COLOR
         float3 color: COLOR;
     #endif
 };
@@ -22,7 +22,7 @@ v2f Vertex(a2v v)
 {
     v2f o;
     VertexNormalInputs vertexNormalInput = GetVertexNormalInputs(v.normalOS, v.tangentOS);
-    #ifdef _UseColor
+    #ifdef _USE_VERTEX_COLOR
         float3 color = v.color * 2 - 1;
         VertexPositionInputs positionInputs = GetVertexPositionInputs(v.positionOS.xyz + float3(color.xy * 0.001 * _OutlineThickness, 0));
         o.positionCS = positionInputs.positionCS;

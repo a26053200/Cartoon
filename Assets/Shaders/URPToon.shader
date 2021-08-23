@@ -79,7 +79,7 @@
             
             #pragma shader_feature_local_vertex _USESMOOTHNORMAL
             #pragma multi_compile_instancing
-            #pragma shader_feature_local _UseColor
+            #pragma shader_feature_local _USE_VERTEX_COLOR
             
             #include "URPOutline.hlsl"
             //#include "URPToonOutlinePass.hlsl"
