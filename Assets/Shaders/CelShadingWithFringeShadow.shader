@@ -12,7 +12,7 @@
         _CelShadeMidPoint ("CelShadeMidPoint", Range(0, 1)) = 0.5
         _CelShadeSmoothness ("CelShadeSmoothness", Range(0, 1)) = 0.1
         [Toggle(_IsFace)] _IsFace ("IsFace", Float) = 0.0
-        _HairShadowDistace ("_HairShadowDistance", Float) = 1
+        _HairShadowDistance ("_HairShadowDistance", Float) = 1
         
         [Header(Rim)]
         _RimColor ("RimColor", Color) = (1, 1, 1, 1)
@@ -47,7 +47,7 @@
         float4 _BaseMap_ST;
         float4 _BaseColor, _BrightColor, _DarkColor, _OutLineColor, _MiddleColor, _RimColor;
         float _CelShadeMidPoint, _CelShadeSmoothness, _OutLineThickness;
-        float _RimSmoothness, _RimStrength, _HairShadowDistace, _HeightCorrectMax, _HeightCorrectMin;
+        float _RimSmoothness, _RimStrength, _HairShadowDistance, _HeightCorrectMax, _HeightCorrectMin;
         
         
         CBUFFER_END
@@ -158,7 +158,7 @@
                     float3 viewLightDir = normalize(TransformWorldToViewDir(mainLight.direction)) * (1 / min(i.posNDCw, 1)) * min(1, 5 / linearEyeDepth) /** heightCorrect*/;
                     
                     //get the final sample point
-                    float2 samplingPoint = scrPos + _HairShadowDistace * viewLightDir.xy;
+                    float2 samplingPoint = scrPos + _HairShadowDistance * viewLightDir.xy;
                     
                     float hairDepth = SAMPLE_TEXTURE2D(_HairSoildColor, sampler_HairSoildColor, samplingPoint).g;
                     hairDepth = LinearEyeDepth(hairDepth, _ZBufferParams);
