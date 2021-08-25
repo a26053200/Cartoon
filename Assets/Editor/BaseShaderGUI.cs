@@ -100,11 +100,11 @@ namespace URPToon
                 materialProperty.colorValue = newColor;
         }
 
-        protected void DrawSliderProperty(MaterialProperty materialProperty, float leftValue = 0f, float rightValue = 1f, string label = null)
+        protected void DrawSliderProperty(MaterialProperty materialProperty, string label = null)
         {
             if (!drawEnable) return;
             EditorGUI.BeginChangeCheck();
-            var newValue = EditorGUILayout.Slider(label ?? materialProperty.displayName, materialProperty.floatValue, leftValue, rightValue);
+            var newValue = _materialEditor.RangeProperty(materialProperty, label ?? materialProperty.displayName);
             if (EditorGUI.EndChangeCheck())
                 materialProperty.floatValue = newValue;
         }

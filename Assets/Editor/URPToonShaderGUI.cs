@@ -157,8 +157,8 @@ namespace URPToon
             DrawColorProperty(_brightColorProp);
             DrawColorProperty(_middleColoProp);
             DrawColorProperty(_darkColorProp);
-            DrawSliderProperty(_celShadeMidPointProp,0,1);
-            DrawSliderProperty(_celShadeSmoothnessProp,0,1);
+            DrawSliderProperty(_celShadeMidPointProp);
+            DrawSliderProperty(_celShadeSmoothnessProp);
 
             BeginKeyWordGroup("_IS_FACE", _isFaceProp);
             {
@@ -183,7 +183,7 @@ namespace URPToon
             //if (m_EnableOutlineProp.floatValue == 1.0)
             {
                 DrawColorProperty(_outlineColorProp);
-                DrawSliderProperty(_outlineThicknessProp,0,5);
+                DrawSliderProperty(_outlineThicknessProp);
                 DrawKeyword("_USE_VERTEX_COLOR", _useColorProp, PropertyNames.UseColor);
             }
         }
