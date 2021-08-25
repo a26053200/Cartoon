@@ -6,21 +6,25 @@
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
         
         [Header(Shading)]
-        _BrightColor ("BrightColor", Color) = (1, 1, 1, 1)
+        [HDR]_BrightColor ("BrightColor", Color) = (1, 1, 1, 1)
         [HDR]_MiddleColor ("MiddleColor", Color) = (0.8, 0.1, 0.1, 1)
-        _DarkColor ("DarkColor", Color) = (0.5, 0.5, 0.5, 1)
+        [HDR]_DarkColor ("DarkColor", Color) = (0.5, 0.5, 0.5, 1)
         _CelShadeMidPoint ("CelShadeMidPoint", Range(0, 1)) = 0.5
         _CelShadeSmoothness ("CelShadeSmoothness", Range(0, 1)) = 0.1
-        [Toggle(_IsFace)] _IsFace ("IsFace", Float) = 0.0
-        _HairShadowDistace ("_HairShadowDistance", Float) = 1
         
-        [Header(Rim)]
+        //[Header(Face)]
+        [Toggle(Is Face)] _IsFace ("IsFace", Float) = 0.0
+        _HairShadowDistance ("_HairShadowDistance", Float) = 1
+        _HeightCorrectMax ("HeightCorrectMax", float) = 1.6
+        _HeightCorrectMin ("HeightCorrectMin", float) = 1.51
+        
+        //[Header(Rim)]
+        [Toggle(Enable Rim)]_EnableRim ("Enable Rim", Float) = 0.0
         _RimColor ("RimColor", Color) = (1, 1, 1, 1)
         _RimSmoothness ("RimSmoothness", Range(0, 10)) = 10
         _RimStrength ("RimStrength", Range(0, 1)) = 0.1
         
-        //[Header(OutLine)]
-        [ToggleOff] _EnableOutline("Enable Outline",Float) = 0.0
+        [Header(OutLine)]
         _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
         _OutlineThickness ("Outline Thickness", float) = 0.5
         _OutlineWidth ("Outline Width", float) = 0.5
@@ -38,13 +42,9 @@
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
-        /*
-        #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-        #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
-        #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-        #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
-        #pragma multi_compile _ _SHADOWS_SOFT
-        */
+        
+        
+        
         ENDHLSL
         
         Pass
@@ -58,7 +58,9 @@
             #pragma fragment frag
 
             #pragma multi_compile_instancing
-            #pragma shader_feature _IsFace
+            
+            #pragma shader_feature _ENABLE_RIM
+            #pragma shader_feature _IS_FACE
             
             #include "URPToonProperty.hlsl"
             #include "URPToonCore.hlsl"
@@ -86,7 +88,7 @@
             ENDHLSL
         }
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        /*
+        
         Pass
         {
             Name "ShadowCaster"
@@ -96,13 +98,20 @@
             ColorMask 0
             
             HLSLPROGRAM
+            
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile _ _SHADOWS_SOFT
+        
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
             
             #include "URPShadowCaster.hlsl"
             ENDHLSL
             
-        }*/
+        }
     }
     CustomEditor "URPToon.URPToonShaderGUI"
 }

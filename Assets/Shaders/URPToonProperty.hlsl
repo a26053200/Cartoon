@@ -12,7 +12,7 @@ struct v2f
     float2 uv: TEXCOORD0;
     float3 positionWS: TEXCOORD1;
     float3 normal: TEXCOORD2;
-    #if _IsFace
+    #if _IS_FACE
         float4 positionSS: TEXCOORD3;
         float posNDCw: TEXCOORD4;
         float4 positionOS: TEXCOORD5;
@@ -30,5 +30,5 @@ CBUFFER_START(UnityPerMaterial)
 float4 _BaseMap_ST;
 float4 _BaseColor, _BrightColor, _DarkColor, _MiddleColor, _RimColor;
 float _CelShadeMidPoint, _CelShadeSmoothness;
-float _RimSmoothness, _RimStrength, _HairShadowDistace, _HeightCorrectMax, _HeightCorrectMin;
+float _RimSmoothness, _RimStrength, _HairShadowDistance, _HeightCorrectMax, _HeightCorrectMin;
 CBUFFER_END

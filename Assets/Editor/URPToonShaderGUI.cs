@@ -11,7 +11,10 @@ namespace URPToon
         private struct Styles
         {
             // Foldouts
-            public static readonly GUIContent OutlineFold = new GUIContent("Outline");
+            public static readonly GUIContent BaseFold = new GUIContent("Base");
+            public static readonly GUIContent CarToonFold = new GUIContent("Cartoon");
+            public static readonly GUIContent RimFold = new GUIContent("Rim");
+            public static readonly GUIContent OutlineFold = new GUIContent("Outline");//Pass
             
             //CheckMark
             public static readonly string IsFace = "_IsFace";
@@ -19,8 +22,28 @@ namespace URPToon
         
         private struct PropertyNames
         {
+            //Base
+            public static readonly string BaseMap = "_BaseMap";
+            public static readonly string BaseColor = "_BaseColor";
+            
+            //Cartoon
+            public static readonly string BrightColor = "_BrightColor";
+            public static readonly string MiddleColor = "_MiddleColor";
+            public static readonly string DarkColor = "_DarkColor";
+            public static readonly string CelShadeMidPoint = "_CelShadeMidPoint";
+            public static readonly string CelShadeSmoothness = "_CelShadeSmoothness";
+            public static readonly string IsFace = "_IsFace";
+            public static readonly string HairShadowDistance = "_HairShadowDistance";
+            public static readonly string HeightCorrectMax = "_HeightCorrectMax";
+            public static readonly string HeightCorrectMin = "_HeightCorrectMin";
+            
+            //Rim
+            public static readonly string EnableRim = "_EnableRim";
+            public static readonly string RimColor = "_RimColor";
+            public static readonly string RimSmoothness = "_RimSmoothness";
+            public static readonly string RimStrength = "_RimStrength";
+            
             //Outline
-            public static readonly string EnableOutline = "_EnableOutline";
             public static readonly string OutlineColor = "_OutlineColor";
             public static readonly string OutlineThickness = "_OutlineThickness";
             public static readonly string UseColor = "_UseColor";
@@ -28,68 +51,140 @@ namespace URPToon
 
         #endregion
 
-        public delegate void DrawPropertiesFun(MaterialEditor materialEditor);
+        
         #region Fields
 
+        private bool _outlineFoldout;
+        private bool _baseFoldOut;
+        private bool _cartoonFoldout;
+        
         // Outline
-        private bool m_OutlineFoldout;
-        private MaterialProperty m_EnableOutlineProp;
-        private MaterialProperty m_OutlineColorProp;
-        private MaterialProperty m_OutlineThicknessProp;
-        private MaterialProperty m_UseColorProp;
-        // Properties
-        private MaterialProperty m_IsFaseProp;
+        private MaterialProperty _baseMapProp;
+        private MaterialProperty _baseColorProp;
+        
+        // Cartoon
+        private MaterialProperty _brightColorProp;
+        private MaterialProperty _middleColoProp;
+        private MaterialProperty _darkColorProp;
+        private MaterialProperty _celShadeMidPointProp;
+        private MaterialProperty _celShadeSmoothnessProp;
+        // Face and Hair
+        private MaterialProperty _isFaceProp;
+        private MaterialProperty _hairShadowDistanceProp;
+        private MaterialProperty _heightCorrectMaxProp;
+        private MaterialProperty _heightCorrectMinProp;
+        
+        // Rim
+        private MaterialProperty _enableRim;
+        private MaterialProperty _rimColorProp;
+        private MaterialProperty _rimSmoothnessProp;
+        private MaterialProperty _rimStrengthProp;
+        
+        // Outline Pass
+        private MaterialProperty _outlineColorProp;
+        private MaterialProperty _outlineThicknessProp;
+        private MaterialProperty _useColorProp;
+        
+        
+        
         
         #endregion
         
-        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
+        protected override void OnShaderGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            //base.OnGUI(materialEditor, properties);
+            //Foldout
+            _baseFoldOut = GetFoldoutState(materialEditor, Styles.BaseFold.text);
+            _cartoonFoldout = GetFoldoutState(materialEditor, Styles.CarToonFold.text);
+            _outlineFoldout = GetFoldoutState(materialEditor, Styles.OutlineFold.text);
             
-            m_OutlineFoldout = GetFoldoutState(materialEditor, Styles.OutlineFold.text);
+            //Base
+            _baseMapProp = FindProperty(PropertyNames.BaseMap, properties, false);
+            _baseColorProp = FindProperty(PropertyNames.BaseColor, properties, false);
             
-            //FindProperties
-            m_IsFaseProp = FindProperty(Styles.IsFace, properties, false);
+            //Cartoon
+            _brightColorProp = FindProperty(PropertyNames.BrightColor, properties, false);
+            _middleColoProp = FindProperty(PropertyNames.MiddleColor, properties, false);
+            _darkColorProp = FindProperty(PropertyNames.DarkColor, properties, false);
+            _celShadeMidPointProp = FindProperty(PropertyNames.CelShadeMidPoint, properties, false);
+            _celShadeSmoothnessProp = FindProperty(PropertyNames.CelShadeSmoothness, properties, false);
+            _isFaceProp = FindProperty(PropertyNames.IsFace, properties, false);
+            _hairShadowDistanceProp = FindProperty(PropertyNames.HairShadowDistance, properties, false);
+            _heightCorrectMaxProp = FindProperty(PropertyNames.HeightCorrectMax, properties, false);
+            _heightCorrectMinProp = FindProperty(PropertyNames.HeightCorrectMin, properties, false);
+            
+            //Rim
+            _enableRim = FindProperty(PropertyNames.EnableRim, properties, false);
+            _rimColorProp = FindProperty(PropertyNames.RimColor, properties, false);
+            _rimSmoothnessProp = FindProperty(PropertyNames.RimSmoothness, properties, false);
+            _rimStrengthProp = FindProperty(PropertyNames.RimStrength, properties, false);
             
             //Outline
-            m_EnableOutlineProp = FindProperty(PropertyNames.EnableOutline, properties, false);
-            m_OutlineColorProp = FindProperty(PropertyNames.OutlineColor, properties, false);
-            m_OutlineThicknessProp = FindProperty(PropertyNames.OutlineThickness, properties, false);
-            m_UseColorProp = FindProperty(PropertyNames.UseColor, properties, false);
+            _outlineColorProp = FindProperty(PropertyNames.OutlineColor, properties, false);
+            _outlineThicknessProp = FindProperty(PropertyNames.OutlineThickness, properties, false);
+            _useColorProp = FindProperty(PropertyNames.UseColor, properties, false);
             
-            EditorGUI.BeginChangeCheck();
             DrawProperties(materialEditor);
-            if (EditorGUI.EndChangeCheck())
-            {
-                //SetMaterialKeywords(materialEditor.target as Material);
-            }
         }
 
         #region Properties
         private void DrawProperties(MaterialEditor materialEditor)
         {
-            // Outline
-            if (((Material) materialEditor.target).FindPass(Styles.OutlineFold.text) != -1)
+            //Base
             {
-                var outlineFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(m_OutlineFoldout, Styles.OutlineFold);
-                if (outlineFoldout)
-                {
-                    DrawOutlineProperties(materialEditor);
-                    EditorGUILayout.Space();
-                }
-                SetFoldoutState(materialEditor, Styles.OutlineFold.text, m_OutlineFoldout, outlineFoldout);
-                EditorGUILayout.EndFoldoutHeaderGroup();
+                DrawFoldout(Styles.BaseFold.text, ref _baseFoldOut, DrawBaseProperties);
+            }
+            
+            //Cartoon
+            {
+                DrawFoldout(Styles.CarToonFold.text, ref _cartoonFoldout,DrawCartoonProperties);
+            }
+            
+            // Outline
+            if (HasPass("Outline"))
+            {
+                DrawFoldout(Styles.OutlineFold.text, ref _outlineFoldout, DrawOutlineProperties);
             }
         }
+               
+        private void DrawBaseProperties()
+        {
+            DrawTextureProperty(_baseMapProp);
+            DrawColorProperty(_baseColorProp);
+        }
+        
+        private void DrawCartoonProperties()
+        {
+            DrawColorProperty(_brightColorProp);
+            DrawColorProperty(_middleColoProp);
+            DrawColorProperty(_darkColorProp);
+            DrawSliderProperty(_celShadeMidPointProp,0,1);
+            DrawSliderProperty(_celShadeSmoothnessProp,0,1);
 
-        private void DrawOutlineProperties(MaterialEditor materialEditor)
+            BeginKeyWordGroup("_IS_FACE", _isFaceProp);
+            {
+                DrawFloat(_hairShadowDistanceProp);
+                DrawFloat(_heightCorrectMaxProp);
+                DrawFloat(_heightCorrectMinProp);
+            }
+            EndKeyWordGroup();
+
+            BeginKeyWordGroup("ENABLE_RIM", _enableRim);
+            {
+                DrawColorProperty(_rimColorProp);
+                DrawSliderProperty(_rimSmoothnessProp);
+                DrawSliderProperty(_rimStrengthProp);
+            }
+            EndKeyWordGroup();
+        }
+        
+        private void DrawOutlineProperties()
         {
             //DrawProperty(materialEditor, m_EnableOutlineProp, PropertyNames.EnableOutline);
             //if (m_EnableOutlineProp.floatValue == 1.0)
             {
-                DrawColorProperty(materialEditor, m_OutlineColorProp, PropertyNames.OutlineColor);
-                DrawSliderProperty(m_OutlineThicknessProp, PropertyNames.OutlineThickness,0,5);
-                DrawKeyword(materialEditor, "_USE_VERTEX_COLOR", m_UseColorProp, PropertyNames.UseColor);
+                DrawColorProperty(_outlineColorProp);
+                DrawSliderProperty(_outlineThicknessProp,0,5);
+                DrawKeyword("_USE_VERTEX_COLOR", _useColorProp, PropertyNames.UseColor);
             }
         }
         

@@ -7,7 +7,7 @@ v2f vert(a2v v)
     o.positionCS = positionInputs.positionCS;
     o.positionWS = positionInputs.positionWS;
     
-    #if _IsFace
+    #if _IS_FACE
         o.posNDCw = positionInputs.positionNDC.w;
         o.positionSS = ComputeScreenPos(positionInputs.positionCS);
         o.positionOS = v.positionOS;
@@ -46,7 +46,7 @@ half4 frag(v2f i): SV_Target
     
     
     //face shadow
-    #if _IsFace
+    #if _IS_FACE
         //"heightCorrect" is a easy mask which used to deal with some extreme view angles,
         //you can delete it if you think it's unnecessary.
         //you also can use it to adjust the shadow length, if you want.
@@ -64,7 +64,7 @@ half4 frag(v2f i): SV_Target
         float3 viewLightDir = normalize(TransformWorldToViewDir(mainLight.direction)) * (1 / min(i.posNDCw, 1)) * min(1, 5 / linearEyeDepth) /** heightCorrect*/;
         
         //get the final sample point
-        float2 samplingPoint = scrPos + _HairShadowDistace * viewLightDir.xy;
+        float2 samplingPoint = scrPos + _HairShadowDistance * viewLightDir.xy;
         
         float hairDepth = SAMPLE_TEXTURE2D(_HairSoildColor, sampler_HairSoildColor, samplingPoint).g;
         hairDepth = LinearEyeDepth(hairDepth, _ZBufferParams);
@@ -87,11 +87,14 @@ half4 frag(v2f i): SV_Target
     float3 diffuse = lerp(_DarkColor.rgb, _BrightColor.rgb, ramp);
     diffuse *= baseMap.rgb;
     
+    float3 final = diffuse;
     //rim light
-    float3 viewDirectionWS = SafeNormalize(GetCameraPositionWS() - i.positionWS.xyz);
-    float rimStrength = pow(saturate(1 - dot(normal, viewDirectionWS)), _RimSmoothness);
-    float3 rimColor = _RimColor.rgb * rimStrength * _RimStrength;
+    #if _ENABLE_RIM
+        float3 viewDirectionWS = SafeNormalize(GetCameraPositionWS() - i.positionWS.xyz);
+        float rimStrength = pow(saturate(1 - dot(normal, viewDirectionWS)), _RimSmoothness);
+        float3 rimColor = _RimColor.rgb * rimStrength * _RimStrength;
+        final += rimColor;
+    #endif
     
-    return float4(diffuse + rimColor, 1);
-    return baseMap * _BaseColor;
+    return float4(final, 1);
 }
