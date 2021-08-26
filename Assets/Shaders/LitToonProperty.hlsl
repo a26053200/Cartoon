@@ -21,5 +21,6 @@ TEXTURE2D(_RampMap); SAMPLER(sampler_RampMap);
     
 CBUFFER_START(UnityPerMaterial)
 float4 _BaseMap_ST, _LightMap_ST, _RampMap_ST;
-float4 _BaseColor;
+float _ShadowArea, _ShadowSmooth, _DarkShadowArea, _DarkShadowSmooth, _FixDarkShadow;
+float4 _BaseColor, _ShadowMultiColor, _DarkShadowMultiColor;
 CBUFFER_END

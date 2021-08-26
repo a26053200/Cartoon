@@ -12,6 +12,9 @@ namespace URPToon
         protected MaterialProperty[] _properties;
         protected Material _material;
         protected bool drawEnable = true;
+
+        protected bool _showVertexColor;
+        protected string _originShaderName;
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             _materialEditor = materialEditor;
@@ -19,20 +22,46 @@ namespace URPToon
             _material = _materialEditor.target as Material;
             
             SetDefaultGUIWidths();
-            
-            drawEnable = true;
-            OnShaderGUI(materialEditor, properties);
 
-            if (!drawEnable)
-                throw new Exception("You defined a BeginGroup, but there is no EndGroup!");
-            DrawSpace();
-            DrawSpace();
-            _materialEditor.RenderQueueField();
-            _materialEditor.EnableInstancingField();
-            _materialEditor.DoubleSidedGIField();
+            OnVertexColor(materialEditor, properties);
+            
+            if (_showVertexColor)
+            {
+                
+            }
+            else
+            {
+                drawEnable = true;
+                OnShaderGUI(materialEditor, properties);
+
+                if (!drawEnable)
+                    throw new Exception("You defined a BeginGroup, but there is no EndGroup!");
+                DrawSpace();
+                DrawSpace();
+                _materialEditor.RenderQueueField();
+                _materialEditor.EnableInstancingField();
+                _materialEditor.DoubleSidedGIField();
+            }
         }
 
         protected abstract void OnShaderGUI(MaterialEditor materialEditor, MaterialProperty[] properties);
+
+        protected void OnVertexColor(MaterialEditor materialEditor, MaterialProperty[] properties)
+        {
+            if (GUILayout.Button(_showVertexColor?"Origin Shader":"Vertex Shader"))
+            {
+                _showVertexColor = !_showVertexColor;
+                if (_showVertexColor)
+                {
+                    _originShaderName = _material.shader.name;
+                    _material.shader = Shader.Find("LitToon/LitVertexColor");
+                }
+                else
+                {
+                    _material.shader = Shader.Find(_originShaderName);
+                }
+            }
+        }
 
         protected void SetDefaultGUIWidths()
         {
