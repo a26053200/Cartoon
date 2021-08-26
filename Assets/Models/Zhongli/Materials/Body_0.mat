@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Body_0
   m_Shader: {fileID: 4800000, guid: 4152dae44ef948d6803bc396710f8c2c, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _USECOLOR_OFF
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -103,6 +103,8 @@ Material:
     - _GlossyReflections: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
+    - _OutlineThickness: 0.652
+    - _OutlineWidth: -0.01
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
@@ -114,6 +116,7 @@ Material:
     - _SpecularRange: 0.17
     - _SrcBlend: 1
     - _Surface: 0
+    - _UseColor: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
@@ -121,6 +124,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarkShadowMultiColor: {r: 0.6792453, g: 0.6792453, b: 0.6792453, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _ShadowMultiColor: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

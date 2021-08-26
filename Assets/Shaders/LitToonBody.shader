@@ -23,6 +23,12 @@
         _Glossiness("Glossiness", Range(0.01, 256)) = 1
         _SpecularRange("Specular Range", Range(0, 3)) = 0.5
         _SpecularColor ("Shdaow Color", Color) = (1, 1, 1, 1)
+        
+        [Space]
+        [Header(OutLine)][Space]
+        _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
+        _OutlineThickness ("Outline Thickness", Range(0,2)) = 0.5
+        [ToggleOff] _UseColor ("UseVertexColor", Float) = 0.0
     }
     SubShader
     {
@@ -58,7 +64,7 @@
         }
         
         //easy outline pass
-        /*
+        
         Pass
         {
             Name "OutLine"
@@ -79,7 +85,7 @@
             ENDHLSL
         }
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        
+        /*
         Pass
         {
             Name "ShadowCaster"
