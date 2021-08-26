@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7107301033331880579}
   - component: {fileID: 885637615478221530}
   - component: {fileID: 9023393503506266843}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Face_Eye
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +92,7 @@ GameObject:
   - component: {fileID: 6188271853345896345}
   - component: {fileID: 4299918865031685646}
   - component: {fileID: 6721865189809028809}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -173,7 +173,7 @@ GameObject:
   - component: {fileID: 7420931326124572473}
   - component: {fileID: 2262037529663821281}
   - component: {fileID: 414926995271924369}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EyeStar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,7 +254,7 @@ GameObject:
   - component: {fileID: 2921349376464736956}
   - component: {fileID: 3865557463152799503}
   - component: {fileID: 5142146524326019552}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EffectMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -335,7 +335,7 @@ GameObject:
   - component: {fileID: 5040157619966371021}
   - component: {fileID: 8259920120882557260}
   - component: {fileID: 1336832621688703039}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Brow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -414,7 +414,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6908809823594341854}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Beidou
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -454,7 +454,7 @@ GameObject:
   - component: {fileID: 724865452359974699}
   - component: {fileID: 5618579213771144562}
   - component: {fileID: 3471841182075548448}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -535,7 +535,7 @@ GameObject:
   - component: {fileID: 604075981315133841}
   - component: {fileID: 906488118644870165}
   - component: {fileID: 4059175720174413453}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Face
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -616,7 +616,7 @@ GameObject:
   - component: {fileID: 6607643525312317543}
   - component: {fileID: 5736464224395099576}
   - component: {fileID: 7653996683480608254}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}

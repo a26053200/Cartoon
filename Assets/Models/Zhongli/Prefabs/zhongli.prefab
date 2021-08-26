@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3673821250842828461}
   - component: {fileID: 8945952928899856187}
   - component: {fileID: 6492472658545617251}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Brow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +92,7 @@ GameObject:
   - component: {fileID: 7908669271693987933}
   - component: {fileID: 5614010946000248325}
   - component: {fileID: 7871347369200684472}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -171,7 +171,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3955727570190935026}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: zhongli
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -211,7 +211,7 @@ GameObject:
   - component: {fileID: 5825753483491310200}
   - component: {fileID: 3775520416347361391}
   - component: {fileID: 3675448030159159584}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Face_Eye
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -292,7 +292,7 @@ GameObject:
   - component: {fileID: 7755815254308423996}
   - component: {fileID: 124857834932121392}
   - component: {fileID: 7517265035322691943}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EffectMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -373,7 +373,7 @@ GameObject:
   - component: {fileID: 3887540881938733716}
   - component: {fileID: 6026529423019609434}
   - component: {fileID: 2329654611899807458}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -454,7 +454,7 @@ GameObject:
   - component: {fileID: 843759102304984056}
   - component: {fileID: 9186599910833451}
   - component: {fileID: 6836629827317624164}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Face
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -535,7 +535,7 @@ GameObject:
   - component: {fileID: 4357885966729174450}
   - component: {fileID: 2160428762005089719}
   - component: {fileID: 6295050950571468008}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EyeStar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -616,7 +616,7 @@ GameObject:
   - component: {fileID: 1237332696863549528}
   - component: {fileID: 4645073835986178657}
   - component: {fileID: 4833285883699814965}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
