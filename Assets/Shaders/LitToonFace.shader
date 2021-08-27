@@ -6,8 +6,10 @@
         [MainTexture]_BaseMap ("Base Map", 2D) = "white" { }
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
         
+        [Space]
+        [Header(Face)][Space]
         _FaceLightMap ("Face Light Map", 2D) = "white" { }
-        [Toggle(Is Face)] _FACE ("IsFace", Float) = 0.0
+        _FaceShadowColor ("Face Shadow Color", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
@@ -17,6 +19,7 @@
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+        
         ENDHLSL
         
         Pass
@@ -25,7 +28,6 @@
             Tags { "LightMode" = "UniversalForward" }
             
             HLSLPROGRAM
-            
             #pragma vertex vert
             #pragma fragment frag
 
@@ -35,6 +37,7 @@
             
             #include "ToonLitProperty.hlsl"
             #include "ToonLitCore.hlsl"
+
             ENDHLSL
         }
         

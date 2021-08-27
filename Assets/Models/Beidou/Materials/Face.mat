@@ -43,6 +43,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _FaceLightMap:
+        m_Texture: {fileID: 2800000, guid: df1811b80e9e5ae4d9a86671c43ae846, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _LightMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -97,6 +101,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EnvironmentReflections: 1
+    - _FACE: 0
     - _FixDarkShadow: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -121,6 +126,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarkShadowMultiColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FaceShadowColor: {r: 0.8490566, g: 0.8490566, b: 0.8490566, a: 1}
     - _ShadowMultiColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

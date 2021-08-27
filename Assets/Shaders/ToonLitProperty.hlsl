@@ -1,6 +1,4 @@
-﻿#pragma once
-
-struct Attributes
+﻿struct Attributes
 {
     float4 positionOS: POSITION;
     float2 uv: TEXCOORD0;
@@ -24,7 +22,6 @@ TEXTURE2D(_RampMap); SAMPLER(sampler_RampMap);
 #ifdef _FACE
     TEXTURE2D(_FaceLightMap); SAMPLER(sampler_FaceLightMap);
 #endif
-
     
 CBUFFER_START(UnityPerMaterial)
     //Base
@@ -36,6 +33,7 @@ CBUFFER_START(UnityPerMaterial)
     float _Glossiness, _SpecularRange;
     float4 _SpecularColor;
 #ifdef _FACE
-    float4 _FaceFront,_FaceUp,_FaceLeft,_FaceRight;
+    float4 _FaceFront,_FaceUp,_FaceLeft,_FaceRight,_FaceShadowColor;
 #endif
+
 CBUFFER_END

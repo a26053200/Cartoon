@@ -34,6 +34,7 @@
             
             #include "ToonLitProperty.hlsl"
             #include "ToonLitCore.hlsl"
+            
             ENDHLSL
         }
         
