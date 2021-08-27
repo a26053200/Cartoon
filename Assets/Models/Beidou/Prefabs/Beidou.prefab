@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7107301033331880579}
   - component: {fileID: 885637615478221530}
   - component: {fileID: 9023393503506266843}
+  - component: {fileID: 1706881506}
   m_Layer: 6
   m_Name: Face_Eye
   m_TagString: Untagged
@@ -81,6 +82,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1706881506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1078384694516559039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcbea2e5c50545468ed030e369bd21ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1365203010214789286
 GameObject:
   m_ObjectHideFlags: 0
@@ -535,6 +548,7 @@ GameObject:
   - component: {fileID: 604075981315133841}
   - component: {fileID: 906488118644870165}
   - component: {fileID: 4059175720174413453}
+  - component: {fileID: 1996897090}
   m_Layer: 6
   m_Name: Face
   m_TagString: Untagged
@@ -605,6 +619,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1996897090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993547503883545480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcbea2e5c50545468ed030e369bd21ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9045303197805972313
 GameObject:
   m_ObjectHideFlags: 0
