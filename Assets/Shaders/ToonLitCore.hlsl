@@ -1,4 +1,4 @@
-﻿
+﻿#pragma once
 
 Varyings vert(Attributes v)
 {
@@ -20,7 +20,17 @@ half4 frag(Varyings i): SV_Target
 {
     half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
     
-    half4 finalColor;
+    half4 finalColor = baseMap;
+     // light
+    float4 shadowCoord = TransformWorldToShadowCoord(i.positionWS.xyz);
+    Light light = GetMainLight(shadowCoord);
+    real shadow = light.shadowAttenuation * light.distanceAttenuation;
+    
+    half3 N = normalize(i.normal);
+    half3 L = normalize(light.direction);
+    half3 V = normalize(i.viewDirWS);
+    half NdotL = max(0, dot(N, L));
+    half lambert = NdotL;// * 0.5 + 0.5;    
 #ifdef _BODY
     /*
     R通道:表示高光的强弱; G通道:表示阴影区域; B通道:控制高光区域的大小
@@ -34,16 +44,6 @@ half4 frag(Varyings i): SV_Target
     half4 lightMap = SAMPLE_TEXTURE2D(_LightMap, sampler_LightMap, i.uv);
     half3 shadowColor = baseMap.rgb * _ShadowMultiColor.rgb;
     half3 darkShadowColor = baseMap.rgb * _DarkShadowMultiColor.rgb;
-    // light
-    float4 shadowCoord = TransformWorldToShadowCoord(i.positionWS.xyz);
-    Light light = GetMainLight(shadowCoord);
-    real shadow = light.shadowAttenuation * light.distanceAttenuation;
-    
-    half3 N = normalize(i.normal);
-    half3 L = normalize(light.direction);
-    half3 V = normalize(i.viewDirWS);
-    half NdotL = max(0, dot(N, L));
-    half lambert = NdotL;// * 0.5 + 0.5;
     
     //如果SFactor = 0,ShallowShadowColor为一级阴影色,否则为BaseColor。
     float sWeight = (lightMap.g * i.color.r + lambert) * 0.5 + 1.125;
@@ -75,8 +75,20 @@ half4 frag(Varyings i): SV_Target
     
     //finalColor.rgb = specular.rgb;
     finalColor.rgb += specular.rgb;
-#else
-    finalColor.rgb = baseMap.rgb;
+#endif
+
+#ifdef _FACE
+    // 左右翻转
+    float2 flipUV = float2(1 - i.uv.x, i.uv.y);
+    half4 faceLightMap = SAMPLE_TEXTURE2D(_FaceLightMap, sampler_FaceLightMap, i.uv);
+    half4 faceLightMap_Flip = SAMPLE_TEXTURE2D(_FaceLightMap, sampler_FaceLightMap, i.uv);
+    
+    float FrontL = dot(normalize(_FaceFront.xz), normalize(L.xz));
+    float RightL = dot(normalize(_FaceRight.xz), normalize(L.xz));
+    RightL = -(acos(RightL) / 3.14159265 - 0.5) * 2;
+    float lightAttenuation = (FrontL > 0) * min((faceLightMap.r > RightL), (faceLightMap.g > -RightL));
+    //float lightAttenuation = (FrontL > 0) * min((faceLightMap.r > LeftL), 1 - (1 - faceLightMap.r < RightL));
+    finalColor.rgb *= lightAttenuation;
 #endif
 
     return half4(finalColor.rgb, 1);

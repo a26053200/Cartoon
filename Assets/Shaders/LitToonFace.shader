@@ -5,6 +5,9 @@
         // Base
         [MainTexture]_BaseMap ("Base Map", 2D) = "white" { }
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
+        
+        _FaceLightMap ("Face Light Map", 2D) = "white" { }
+        [Toggle(Is Face)] _FACE ("IsFace", Float) = 0.0
     }
     SubShader
     {
@@ -28,8 +31,7 @@
 
             #pragma multi_compile_instancing
             
-            #pragma shader_feature _ENABLE_RIM
-            #pragma shader_feature _IS_FACE
+            #define _FACE
             
             #include "ToonLitProperty.hlsl"
             #include "ToonLitCore.hlsl"

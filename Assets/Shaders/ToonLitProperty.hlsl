@@ -1,4 +1,4 @@
-﻿
+﻿#pragma once
 
 struct Attributes
 {
@@ -21,14 +21,21 @@ struct Varyings
 TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 TEXTURE2D(_LightMap); SAMPLER(sampler_LightMap);
 TEXTURE2D(_RampMap); SAMPLER(sampler_RampMap);
+#ifdef _FACE
+    TEXTURE2D(_FaceLightMap); SAMPLER(sampler_FaceLightMap);
+#endif
+
     
 CBUFFER_START(UnityPerMaterial)
-//Base
-float4 _BaseMap_ST, _LightMap_ST, _RampMap_ST;
-//Shadow
-float _ShadowArea, _ShadowSmooth, _DarkShadowArea, _DarkShadowSmooth, _FixDarkShadow;
-float4 _BaseColor, _ShadowMultiColor, _DarkShadowMultiColor;
-//Specular
-float _Glossiness, _SpecularRange;
-float4 _SpecularColor;
+    //Base
+    float4 _BaseMap_ST, _LightMap_ST, _RampMap_ST;
+    //Shadow
+    float _ShadowArea, _ShadowSmooth, _DarkShadowArea, _DarkShadowSmooth, _FixDarkShadow;
+    float4 _BaseColor, _ShadowMultiColor, _DarkShadowMultiColor;
+    //Specular
+    float _Glossiness, _SpecularRange;
+    float4 _SpecularColor;
+#ifdef _FACE
+    float4 _FaceFront,_FaceUp,_FaceLeft,_FaceRight;
+#endif
 CBUFFER_END
