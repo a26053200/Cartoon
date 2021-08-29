@@ -25,6 +25,16 @@
         _SpecularColor ("Shdaow Color", Color) = (1, 1, 1, 1)
         
         [Space]
+        [Header(Rim)][Space]
+        //_RimMin("Rim Min", Range(0, 2)) = 1
+        //_RimMax("Rim Max", Range(2, 4)) = 3
+        //_RimOffsetMul("_RimWidth", Range(0, 0.1)) = 0.012
+        //_RimThreshold("_Threshold", Range(0, 1)) = 0.09
+        _RimColor ("Rim Color", Color) = (1, 1, 1, 1)
+        _RimStrength("Rim Strength", Range(0, 1)) = 0.09
+        _FresnelMask("_FresnelMask", Range(0, 1)) = 0.012
+        
+        [Space]
         [Header(OutLine)][Space]
         _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
         _OutlineThickness ("Outline Thickness", Range(0,2)) = 0.5
@@ -44,6 +54,7 @@
         Pass
         {
             Name "BaseCel"
+            Cull Off
             Tags { "LightMode" = "UniversalForward" }
             
             HLSLPROGRAM
@@ -56,6 +67,7 @@
             #pragma shader_feature _ENABLE_RIM
             #pragma shader_feature _IS_FACE
             
+            #define _RIM
             #define _BODY
             
             #include "ToonLitProperty.hlsl"
@@ -64,7 +76,6 @@
         }
         
         //easy outline pass
-        
         Pass
         {
             Name "OutLine"
@@ -84,6 +95,7 @@
             //#include "URPToonOutlinePass.hlsl"
             ENDHLSL
         }
+        
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
         /*
         Pass
@@ -107,8 +119,8 @@
             
             #include "URPShadowCaster.hlsl"
             ENDHLSL
-            
-        }*/
+        }
+        */
     }
     //CustomEditor "URPToon.LitToonShaderGUI"
 }

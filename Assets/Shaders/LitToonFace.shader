@@ -8,6 +8,8 @@
         
         [Space]
         [Header(Face)][Space]
+        _FaceShadowMapPow ("Face Shadow Map Pow", Range(0.001, 1.0)) = 0.2
+        _FaceShadowOffset ("Face Shadow Offset", Range(-1.0, 1.0)) = 0.0
         _FaceLightMap ("Face Light Map", 2D) = "white" { }
         _FaceShadowColor ("Face Shadow Color", Color) = (1, 1, 1, 1)
     }
@@ -42,7 +44,7 @@
         }
         
         //easy outline pass
-        /*
+        
         Pass
         {
             Name "OutLine"
@@ -63,7 +65,7 @@
             ENDHLSL
         }
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        
+        /*
         Pass
         {
             Name "ShadowCaster"

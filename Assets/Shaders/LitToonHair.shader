@@ -42,8 +42,7 @@
 
             #pragma multi_compile_instancing
             
-            #pragma shader_feature _ENABLE_RIM
-            #pragma shader_feature _IS_FACE
+            #define _BODY
             
             #include "ToonLitProperty.hlsl"
             #include "ToonLitCore.hlsl"

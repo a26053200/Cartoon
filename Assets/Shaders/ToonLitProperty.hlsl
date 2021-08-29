@@ -8,20 +8,20 @@
 
 struct Varyings
 {
-    float4 positionCS: SV_POSITION;
     float4 color: COLOR;
     float3 normal: NORMAL;
     float2 uv: TEXCOORD0;
+    float4 positionCS: SV_POSITION;
     float3 positionWS: TEXCOORD1;
-    float3 viewDirWS: TEXCOORD2;
+    float3 positionVS: TEXCOORD2;
+    float4 positionNDC: TEXCOORD3;
+    float3 samplePositionVS: TEXCOORD4;
+    float4 scrPos: TEXCOORD5;
+    float3 normalVS: TEXCOORD6;
+    float3 viewDirWS: TEXCOORD7;
 };
 
-TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
-TEXTURE2D(_LightMap); SAMPLER(sampler_LightMap);
-TEXTURE2D(_RampMap); SAMPLER(sampler_RampMap);
-#ifdef _FACE
-    TEXTURE2D(_FaceLightMap); SAMPLER(sampler_FaceLightMap);
-#endif
+
     
 CBUFFER_START(UnityPerMaterial)
     //Base
@@ -32,8 +32,21 @@ CBUFFER_START(UnityPerMaterial)
     //Specular
     float _Glossiness, _SpecularRange;
     float4 _SpecularColor;
+    //Rim
+    float _RimOffsetMul, _RimThreshold,_FresnelMask,_RimStrength;
+    float4 _RimColor;
+
 #ifdef _FACE
+    float _FaceShadowOffset, _FaceShadowMapPow;
     float4 _FaceFront,_FaceUp,_FaceLeft,_FaceRight,_FaceShadowColor;
 #endif
 
 CBUFFER_END
+
+TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+TEXTURE2D(_LightMap); SAMPLER(sampler_LightMap);
+TEXTURE2D(_RampMap); SAMPLER(sampler_RampMap);
+TEXTURE2D_X_FLOAT(_CameraDepthTexture); SAMPLER(sampler_CameraDepthTexture);
+#ifdef _FACE
+    TEXTURE2D(_FaceLightMap); SAMPLER(sampler_FaceLightMap);
+#endif
