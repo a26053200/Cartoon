@@ -1,23 +1,10 @@
-﻿Shader "LitToon/Avatar/LitToonHair"
+﻿Shader "LitToon/Avatar/LitToonEye"
 {
     Properties
     {
         // Base
         [MainTexture]_BaseMap ("Base Map", 2D) = "white" { }
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
-        _LightMap ("Light Map", 2D) = "white" { }
-        _RampMap ("Ramp Map", 2D) = "white" { }
-        
-        [Space]
-        [Header(Shadow)]
-        _ShadowArea("Shadow Area", Float) = 0
-        _ShadowSmooth("Shadow Smooth", Range(0, 1)) = 0
-        _ShadowMultiColor ("Shdaow Color", Color) = (1, 1, 1, 1)
-        _DarkShadowArea("Shadow Area", Float) = 0
-        _DarkShadowSmooth("Shadow Smooth", Range(0, 1)) = 0
-        _DarkShadowMultiColor ("Dark Shdaow Color", Color) = (1, 1, 1, 1)
-        _FixDarkShadow("Fix Dark Shadow", Range(0, 1)) = 0
-        
     }
     SubShader
     {
@@ -29,7 +16,7 @@
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
         
         ENDHLSL
-        
+         /*
         Pass
         {
             Name "BaseCel"
@@ -42,13 +29,16 @@
 
             #pragma multi_compile_instancing
             
-            #define _BODY
+            #pragma shader_feature _ENABLE_RIM
+            #pragma shader_feature _IS_FACE
             
             #include "ToonLitProperty.hlsl"
+            //#include "ToonLitUtils.hlsl"
             #include "ToonLitCore.hlsl"
+            
             ENDHLSL
         }
-        
+        */
         //easy outline pass
         /*
         Pass
@@ -71,7 +61,7 @@
             ENDHLSL
         }
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        
+        */
         Pass
         {
             Name "ShadowCaster"
@@ -94,7 +84,8 @@
             #include "URPShadowCaster.hlsl"
             ENDHLSL
             
-        }*/
+        }
+        
     }
     //CustomEditor "URPToon.LitToonShaderGUI"
 }

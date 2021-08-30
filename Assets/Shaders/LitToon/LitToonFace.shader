@@ -1,44 +1,17 @@
-﻿Shader "LitToon/Avatar/LitToonBody"
+﻿Shader "LitToon/Avatar/LitToonFace"
 {
     Properties
     {
         // Base
         [MainTexture]_BaseMap ("Base Map", 2D) = "white" { }
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
-        _LightMap ("Light Map", 2D) = "white" { }
-        _RampMap ("Ramp Map", 2D) = "white" { }
         
         [Space]
-        [Header(Shadow)][Space]
-        _ShadowArea("Shadow Area", Range(0, 1)) = 0.5
-        _ShadowSmooth("Shadow Smooth", Range(0, 1)) = 0.5
-        _ShadowMultiColor ("Shdaow Color", Color) = (1, 1, 1, 1)
-        _DarkShadowArea("Dark Shadow Area", Range(0, 1)) = 0.5
-        _DarkShadowSmooth("Dark Shadow Smooth", Range(0, 1)) = 0.5
-        _DarkShadowMultiColor ("Dark Shdaow Color", Color) = (1, 1, 1, 1)
-        _FixDarkShadow("Fix Dark Shadow", Range(0, 1)) = 0.5
-        
-        [Space]
-        [Header(Specular)][Space]
-        _Glossiness("Glossiness", Range(0.01, 256)) = 1
-        _SpecularRange("Specular Range", Range(0, 3)) = 0.5
-        _SpecularColor ("Shdaow Color", Color) = (1, 1, 1, 1)
-        
-        [Space]
-        [Header(Rim)][Space]
-        //_RimMin("Rim Min", Range(0, 2)) = 1
-        //_RimMax("Rim Max", Range(2, 4)) = 3
-        //_RimOffsetMul("_RimWidth", Range(0, 0.1)) = 0.012
-        //_RimThreshold("_Threshold", Range(0, 1)) = 0.09
-        _RimColor ("Rim Color", Color) = (1, 1, 1, 1)
-        _RimStrength("Rim Strength", Range(0, 1)) = 0.09
-        _FresnelMask("_FresnelMask", Range(0, 1)) = 0.012
-        
-        [Space]
-        [Header(OutLine)][Space]
-        _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
-        _OutlineThickness ("Outline Thickness", Range(0,2)) = 0.5
-        [ToggleOff] _UseColor ("UseVertexColor", Float) = 0.0
+        [Header(Face)][Space]
+        _FaceShadowMapPow ("Face Shadow Map Pow", Range(0.001, 1.0)) = 0.2
+        _FaceShadowOffset ("Face Shadow Offset", Range(-1.0, 1.0)) = 0.0
+        _FaceLightMap ("Face Light Map", 2D) = "white" { }
+        _FaceShadowColor ("Face Shadow Color", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
@@ -50,31 +23,27 @@
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
         
         ENDHLSL
-        
+        /*
         Pass
         {
             Name "BaseCel"
-            Cull Off
             Tags { "LightMode" = "UniversalForward" }
             
             HLSLPROGRAM
-            
             #pragma vertex vert
             #pragma fragment frag
 
             #pragma multi_compile_instancing
             
-            #pragma shader_feature _ENABLE_RIM
-            #pragma shader_feature _IS_FACE
-            
-            #define _RIM
-            #define _BODY
+            #define _FACE
             
             #include "ToonLitProperty.hlsl"
+            //#include "ToonLitUtils.hlsl"
             #include "ToonLitCore.hlsl"
+
             ENDHLSL
         }
-        
+       
         //easy outline pass
         Pass
         {
@@ -84,20 +53,16 @@
             
             HLSLPROGRAM
             
-            #pragma vertex Vertex
-            #pragma fragment Fragment
+            #pragma vertex vert
+            #pragma fragment frag
             
-            #pragma shader_feature_local_vertex _USESMOOTHNORMAL
             #pragma multi_compile_instancing
-            #pragma shader_feature_local _USE_VERTEX_COLOR
             
-            #include "URPOutline.hlsl"
-            //#include "URPToonOutlinePass.hlsl"
+            #include "ToonLitPassOutline.hlsl"
             ENDHLSL
-        }
-        
+        } 
+        */
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        /*
         Pass
         {
             Name "ShadowCaster"
@@ -119,8 +84,8 @@
             
             #include "URPShadowCaster.hlsl"
             ENDHLSL
+            
         }
-        */
     }
     //CustomEditor "URPToon.LitToonShaderGUI"
 }

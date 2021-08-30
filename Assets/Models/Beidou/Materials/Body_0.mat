@@ -98,7 +98,7 @@ Material:
     - _DstBlend: 0
     - _EnvironmentReflections: 1
     - _FixDarkShadow: 0.351
-    - _FresnelMask: 0.096
+    - _FresnelMask: 1
     - _GlossMapScale: 0
     - _Glossiness: 13
     - _GlossyReflections: 0
@@ -111,9 +111,9 @@ Material:
     - _RimBrightness: 0.352
     - _RimMax: 0.012
     - _RimMin: 0.012
-    - _RimOffsetMul: 0.012
-    - _RimStrength: 0.436
-    - _RimThreshold: 0.09
+    - _RimOffsetMul: 0.0036
+    - _RimStrength: 0.548
+    - _RimThreshold: 1
     - _ShadowArea: 0.602
     - _ShadowSmooth: 0
     - _Smoothness: 0.5
@@ -131,7 +131,7 @@ Material:
     - _DarkShadowMultiColor: {r: 0.4433962, g: 0.4433962, b: 0.4433962, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimColor: {r: 0.7372549, g: 0.3529412, b: 0.40000004, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowMultiColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

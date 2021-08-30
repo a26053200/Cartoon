@@ -1,17 +1,23 @@
-﻿Shader "LitToon/Avatar/LitToonFace"
+﻿Shader "LitToon/Avatar/LitToonHair"
 {
     Properties
     {
         // Base
         [MainTexture]_BaseMap ("Base Map", 2D) = "white" { }
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
+        _LightMap ("Light Map", 2D) = "white" { }
+        _RampMap ("Ramp Map", 2D) = "white" { }
         
         [Space]
-        [Header(Face)][Space]
-        _FaceShadowMapPow ("Face Shadow Map Pow", Range(0.001, 1.0)) = 0.2
-        _FaceShadowOffset ("Face Shadow Offset", Range(-1.0, 1.0)) = 0.0
-        _FaceLightMap ("Face Light Map", 2D) = "white" { }
-        _FaceShadowColor ("Face Shadow Color", Color) = (1, 1, 1, 1)
+        [Header(Shadow)]
+        _ShadowArea("Shadow Area", Float) = 0
+        _ShadowSmooth("Shadow Smooth", Range(0, 1)) = 0
+        _ShadowMultiColor ("Shdaow Color", Color) = (1, 1, 1, 1)
+        _DarkShadowArea("Shadow Area", Float) = 0
+        _DarkShadowSmooth("Shadow Smooth", Range(0, 1)) = 0
+        _DarkShadowMultiColor ("Dark Shdaow Color", Color) = (1, 1, 1, 1)
+        _FixDarkShadow("Fix Dark Shadow", Range(0, 1)) = 0
+        
     }
     SubShader
     {
@@ -23,23 +29,24 @@
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
         
         ENDHLSL
-        
+        /*
         Pass
         {
             Name "BaseCel"
             Tags { "LightMode" = "UniversalForward" }
             
             HLSLPROGRAM
+            
             #pragma vertex vert
             #pragma fragment frag
 
             #pragma multi_compile_instancing
             
-            #define _FACE
+            #define _BODY
             
             #include "ToonLitProperty.hlsl"
+            //#include "ToonLitUtils.hlsl"
             #include "ToonLitCore.hlsl"
-
             ENDHLSL
         }
         
@@ -65,7 +72,7 @@
             ENDHLSL
         }
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        /*
+        */
         Pass
         {
             Name "ShadowCaster"
@@ -88,7 +95,7 @@
             #include "URPShadowCaster.hlsl"
             ENDHLSL
             
-        }*/
+        }
     }
     //CustomEditor "URPToon.LitToonShaderGUI"
 }

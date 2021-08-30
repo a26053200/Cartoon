@@ -10,6 +10,10 @@ A通道:
 Varyings vert(Attributes v)
 {
     Varyings o;
+    VertexNormalInputs vertexNormalInput = GetVertexNormalInputs(v.normal.xyz);
+    o.normal = vertexNormalInput.normalWS;
+    o.normalVS = TransformWorldToViewDir(vertexNormalInput.normalWS, true);
+    
     VertexPositionInputs vertexInput = GetVertexPositionInputs(v.positionOS.xyz);
     o.positionCS = vertexInput.positionCS;
     o.positionWS = vertexInput.positionWS;
@@ -19,24 +23,22 @@ Varyings vert(Attributes v)
     o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
     o.viewDirWS = GetCameraPositionWS() - vertexInput.positionWS;
     
-    VertexNormalInputs vertexNormalInput = GetVertexNormalInputs(v.normal.xyz);
-    o.normal = vertexNormalInput.normalWS;
-    o.normalVS = TransformWorldToViewDir(vertexNormalInput.normalWS, true);
     
-    o.scrPos = ComputeScreenPos(vertexInput.positionCS);
+    
+    //o.scrPos = ComputeScreenPos(vertexInput.positionCS);
     o.samplePositionVS = float3(o.positionVS.xy + o.normal.xy * _RimOffsetMul, o.positionVS.z); // 保持z不变（CS.w = -VS.z）
-    
+
     o.color = v.color;
     return o;
 }
 
 float4 TransformHClipToViewPortPos(float4 positionCS)
- {
-     float4 o = positionCS * 0.5f;
-     o.xy = float2(o.x, o.y * _ProjectionParams.x) + o.w;
-     o.zw = positionCS.zw;
-     return o / o.w;
- }
+{
+    float4 o = positionCS * 0.5f;
+    o.xy = float2(o.x, o.y * _ProjectionParams.x) + o.w;
+    o.zw = positionCS.zw;
+    return o / o.w;
+}
 
 half4 frag(Varyings i): SV_Target
 {
@@ -95,28 +97,27 @@ half4 frag(Varyings i): SV_Target
 //基于深度的硬边缘光
     float3 rimColor = 0;
 #ifdef _RIM
-   
+    /*
     float2 screenPos= i.scrPos .xy / i.scrPos .w;
     float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, screenPos).r;
     float depthValue = Linear01Depth(depth, _ZBufferParams);
-     /*
+    */
     float4 samplePositionCS = TransformWViewToHClip(i.samplePositionVS); // input.positionCS不是真正的CS 而是SV_Position屏幕坐标
     float4 samplePositionVP = TransformHClipToViewPortPos(samplePositionCS);
-    //float depth = i.positionNDC.z / i.positionNDC.w;
-    float linearEyeDepth = LinearEyeDepth(depth, _ZBufferParams); // 离相机越近越小
-    float3 depthTex = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, samplePositionVP);
-    float offsetDepth = depthValue; // _CameraDepthTexture.r = input.positionNDC.z / input.positionNDC.w
+    float offsetDepth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, samplePositionVP).r; // _CameraDepthTexture.r = input.positionNDC.z / input.positionNDC.w
     float linearEyeOffsetDepth = LinearEyeDepth(offsetDepth, _ZBufferParams);
+    float depth = i.positionNDC.z / i.positionNDC.w;
+    float linearEyeDepth = LinearEyeDepth(depth, _ZBufferParams); // 离相机越近越小
     float depthDiff = linearEyeOffsetDepth - linearEyeDepth;
     float rimIntensity = step(_RimThreshold, depthDiff);
-    */
+    
     //_FresnelMask
-    float rimRatio = 1 - saturate(dot(V, abs(N)));
-    rimRatio = pow(rimRatio, exp2(lerp(4.0, 0.0, _FresnelMask)));
-    //rimRatio = pow(rimRatio, exp2(_FresnelMask));
-    //float rimIntensity = lerp(0, rimIntensity, rimRatio);
-    rimColor = lerp(0, _RimColor.rgb, rimRatio);
-    //rimColor = depthValue.xxx;
+    float rimRatio = 1 - saturate(dot(V, N));
+    //rimRatio = pow(rimRatio, exp2(lerp(4.0, 0.0, _FresnelMask)));
+    rimIntensity = lerp(0, rimIntensity, rimRatio);
+    //rimColor = rimIntensity.xxx;
+    //rimColor = rimRatio.xxx * _RimStrength;
+    rimColor = lerp(0, _RimColor.rgb, rimIntensity);
     finalColor.rgb += rimColor * _RimStrength;
 #endif
 

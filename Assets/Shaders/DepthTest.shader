@@ -67,7 +67,7 @@
                     //float depth = tex2D(_CameraDepthTexture,i.scrPos.xy).r;
                     float depthValue = Linear01Depth(depth, _ZBufferParams);
                     float3 finalColor = float3(depthValue, depthValue, depthValue);
-                    return float4(depth.xxx, 1);
+                    return float4(depthValue.xxx, 1);
                 }
                 ENDHLSL
             }

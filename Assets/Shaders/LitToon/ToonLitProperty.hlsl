@@ -4,6 +4,10 @@
     float2 uv: TEXCOORD0;
     float3 normal: NORMAL;
     float4 color: COLOR;
+#ifdef _USESMOOTHNORMAL
+    float4 tangentOS : TANGENT;
+    float2 texcoord7 : TEXCOORD7;
+#endif
 };
 
 struct Varyings
@@ -16,12 +20,11 @@ struct Varyings
     float3 positionVS: TEXCOORD2;
     float4 positionNDC: TEXCOORD3;
     float3 samplePositionVS: TEXCOORD4;
-    float4 scrPos: TEXCOORD5;
-    float3 normalVS: TEXCOORD6;
-    float3 viewDirWS: TEXCOORD7;
+    //float4 scrPos: TEXCOORD5;
+    float3 normalVS: TEXCOORD5;
+    float3 viewDirWS: TEXCOORD6;
+
 };
-
-
     
 CBUFFER_START(UnityPerMaterial)
     //Base
