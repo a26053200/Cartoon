@@ -100,22 +100,22 @@ Material:
     - _FixDarkShadow: 0.336
     - _FresnelMask: 0
     - _GlossMapScale: 0
-    - _Glossiness: 76
+    - _Glossiness: 80
     - _GlossyReflections: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _OffsetMul: 0.012
-    - _OutlineThickness: 0.652
-    - _OutlineWidth: -0.01
+    - _OutlineThickness: 0.41
+    - _OutlineWidth: 0
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimBrightness: 0.596
     - _RimMax: 0.012
     - _RimMin: 0.012
-    - _RimOffsetMul: 0
-    - _RimStrength: 1
-    - _RimThreshold: 0.06
+    - _RimOffsetMul: 0.0203
+    - _RimStrength: 0.726
+    - _RimThreshold: 0.208
     - _ShadowArea: 0.617
     - _ShadowSmooth: 0
     - _Smoothness: 0.5
@@ -133,8 +133,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarkShadowMultiColor: {r: 0.49056602, g: 0.49056602, b: 0.49056602, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimColor: {r: 0.254717, g: 0.099889025, b: 0, a: 1}
+    - _OutlineColor: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowMultiColor: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

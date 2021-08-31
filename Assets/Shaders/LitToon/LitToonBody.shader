@@ -76,7 +76,7 @@
             #include "ToonLitCore.hlsl"
             ENDHLSL
         }
-        /*
+        
         //easy outline pass
         Pass
         {
@@ -130,7 +130,7 @@
         }
         
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        
+        /*
         Pass
         {
             Name "ShadowCaster"

@@ -12,6 +12,12 @@
         _FaceShadowOffset ("Face Shadow Offset", Range(-1.0, 1.0)) = 0.0
         _FaceLightMap ("Face Light Map", 2D) = "white" { }
         _FaceShadowColor ("Face Shadow Color", Color) = (1, 1, 1, 1)
+        
+         [Space]
+        [Header(OutLine)][Space]
+        _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
+        _OutlineThickness ("Outline Thickness", Range(0,2)) = 0.5
+        _OutlineWidth ("Outline Width", Range(0,2)) = 0.5
     }
     SubShader
     {
@@ -21,13 +27,12 @@
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
-        
         ENDHLSL
-        /*
+        
         Pass
         {
             Name "BaseCel"
-            Tags { "LightMode" = "UniversalForward" }
+            
             
             HLSLPROGRAM
             #pragma vertex vert
@@ -43,25 +48,28 @@
 
             ENDHLSL
         }
-       
+        
         //easy outline pass
         Pass
         {
             Name "OutLine"
+            Tags { "LightMode" = "UniversalForward" }
             Cull Front
             ZWrite On
             
             HLSLPROGRAM
             
-            #pragma vertex vert
-            #pragma fragment frag
+            #pragma vertex VertexOutline
+            #pragma fragment FragmentOutline
             
+            #define _USESMOOTHNORMAL
             #pragma multi_compile_instancing
             
             #include "ToonLitPassOutline.hlsl"
             ENDHLSL
-        } 
-        */
+        }
+        
+        /*
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
         Pass
         {
@@ -84,8 +92,8 @@
             
             #include "URPShadowCaster.hlsl"
             ENDHLSL
-            
         }
+        */
     }
     //CustomEditor "URPToon.LitToonShaderGUI"
 }

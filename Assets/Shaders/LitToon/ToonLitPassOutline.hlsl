@@ -1,7 +1,4 @@
-﻿﻿//referenced:https://github.com/you-ri/LiliumToonGraph/blob/master/Packages/jp.lilium.toongraph/Editor/ShaderGraph/ToonOutlinePass.hlsl
-#ifndef TOON_OUTLINEPASS_INCLUDED
-#define TOON_OUTLINEPASS_INCLUDED
-
+﻿
 CBUFFER_START(UnityPerMaterial)
 float4 _OutlineColor;
 float _OutlineWidth;
@@ -43,7 +40,7 @@ float4 TransformOutlineToHClipScreenSpace(float4 position, float3 normal, float 
     return vertex;
 }
 
-Varyings Vertex(Attributes input)
+Varyings VertexOutline(Attributes input)
 {
     Varyings output = (Varyings) 0;
 
@@ -63,10 +60,9 @@ Varyings Vertex(Attributes input)
     return output;
 }
 
-half4 Fragment(Varyings input) : SV_Target
+half4 FragmentOutline(Varyings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     return _OutlineColor;
 }
-#endif
