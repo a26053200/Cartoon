@@ -105,16 +105,16 @@ Material:
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _OutlineThickness: 0.07
-    - _OutlineWidth: 0.52
+    - _OutlineWidth: 0.1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimBrightness: 0.352
     - _RimMax: 0.012
     - _RimMin: 0.012
-    - _RimOffsetMul: 0.003
+    - _RimOffsetMul: 0.0029
     - _RimStrength: 1
-    - _RimThreshold: 0.23
+    - _RimThreshold: 1
     - _ShadowArea: 0.602
     - _ShadowSmooth: 0
     - _Smoothness: 0.5

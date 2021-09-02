@@ -37,7 +37,7 @@
         [Space]
         [Header(OutLine)][Space]
         _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
-        _OutlineThickness ("Outline Thickness", Range(0,2)) = 0.5
+        //_OutlineThickness ("Outline Thickness", Range(0,2)) = 0.5
         _OutlineWidth ("Outline Width", Range(0,2)) = 0.5
         //[ToggleOff] _UseColor ("UseVertexColor", Float) = 0.0
     }

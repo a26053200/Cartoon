@@ -40,6 +40,15 @@ float4 TransformOutlineToHClipScreenSpace(float4 position, float3 normal, float 
     return vertex;
 }
 
+//https://github.com/Jason-Ma-233/JasonMaToonRenderPipeline
+//Get Smooth Outline NormalWS
+float3 GetSmoothedWorldNormal(float2 uv7, float3x3 t_tbn)
+{
+    float3 normal = float3(uv7, 0);
+    normal.z = sqrt(1.0 - saturate(dot(normal.xy, normal.xy)));
+    return mul(normal, t_tbn);
+}
+
 Varyings VertexOutline(Attributes input)
 {
     Varyings output = (Varyings) 0;
