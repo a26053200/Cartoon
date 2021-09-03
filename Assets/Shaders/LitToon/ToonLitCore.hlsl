@@ -1,4 +1,6 @@
-﻿/*
+﻿#pragma once
+
+/*
 R通道:表示高光的强弱; G通道:表示阴影区域; B通道:控制高光区域的大小
 A通道:
     0 hard/emission/specular/silk
@@ -23,7 +25,8 @@ Varyings vert(Attributes v)
     o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
     o.viewDirWS = GetCameraPositionWS() - vertexInput.positionWS;
     
-    
+    o.uv0AndFogCoord.xy = o.uv;
+    o.fogCoord.z = ComputeFogFactor(vertexInput.positionCS.z);
     
     //o.scrPos = ComputeScreenPos(vertexInput.positionCS);
     o.samplePositionVS = float3(o.positionVS.xy + o.normal.xy * _RimOffsetMul, o.positionVS.z); // 保持z不变（CS.w = -VS.z）
@@ -119,6 +122,7 @@ half4 frag(Varyings i): SV_Target
     //rimColor = rimRatio.xxx * _RimStrength;
     rimColor = lerp(0, _RimColor.rgb, rimIntensity);
     finalColor.rgb += rimColor * _RimStrength;
+    rimColor = rimIntensity.xxx;
 #endif
 
 #ifdef _FACE
@@ -163,5 +167,9 @@ half4 frag(Varyings i): SV_Target
 #endif
     //Debug
     //finalColor.rgb = rimColor;
+    
+    // Mix Fog
+    color.rgb = MixFog(finalColor.rgb, inputData.fogCoord);
+    
     return half4(finalColor.rgb, 1);
 }

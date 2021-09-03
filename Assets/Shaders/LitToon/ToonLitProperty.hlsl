@@ -1,4 +1,6 @@
-﻿struct Attributes
+﻿#pragma once
+
+struct Attributes
 {
     float4 positionOS: POSITION;
     float2 uv: TEXCOORD0;
@@ -23,7 +25,7 @@ struct Varyings
     //float4 scrPos: TEXCOORD5;
     float3 normalVS: TEXCOORD5;
     float3 viewDirWS: TEXCOORD6;
-
+    float3 fogFactorAndVertexLight   : TEXCOORD7; // x: fogFactor, yzw: vertex light
 };
     
 CBUFFER_START(UnityPerMaterial)

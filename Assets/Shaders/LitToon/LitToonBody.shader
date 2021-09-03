@@ -64,6 +64,7 @@
             #pragma fragment frag
 
             #pragma multi_compile_instancing
+            #pragma multi_compile_fog
             
             #pragma shader_feature _ENABLE_RIM
             #pragma shader_feature _IS_FACE

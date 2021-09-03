@@ -22,7 +22,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: NoShadow
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_ShaderKeywords: _GLOSSYREFLECTIONS_OFF _USECOLOR_OFF
+  m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -120,13 +120,13 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _OutlineThickness: 0.5
-    - _OutlineWidth: 0.5
+    - _OutlineWidth: 0
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _RimOffsetMul: 0.00376
-    - _RimStrength: 0.09
-    - _RimThreshold: 0.891
+    - _RimOffsetMul: 0.1
+    - _RimStrength: 1
+    - _RimThreshold: 1
     - _ShadowArea: 0.5
     - _ShadowSmooth: 0.5
     - _Smoothness: 0.5
@@ -140,7 +140,7 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarkShadowMultiColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

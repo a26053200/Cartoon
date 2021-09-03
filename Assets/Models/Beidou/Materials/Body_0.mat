@@ -112,8 +112,8 @@ Material:
     - _RimBrightness: 0.352
     - _RimMax: 0.012
     - _RimMin: 0.012
-    - _RimOffsetMul: 0.0029
-    - _RimStrength: 1
+    - _RimOffsetMul: 0.0058
+    - _RimStrength: 0.097
     - _RimThreshold: 1
     - _ShadowArea: 0.602
     - _ShadowSmooth: 0

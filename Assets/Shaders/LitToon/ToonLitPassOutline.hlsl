@@ -1,4 +1,5 @@
-﻿
+﻿#pragma once
+
 CBUFFER_START(UnityPerMaterial)
 float4 _OutlineColor;
 float _OutlineWidth;
