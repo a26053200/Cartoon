@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef TOON_LIT_PASS_OUTLINE
+#define TOON_LIT_PASS_OUTLINE
 
 CBUFFER_START(UnityPerMaterial)
 float4 _OutlineColor;
@@ -76,3 +77,5 @@ half4 FragmentOutline(Varyings input) : SV_Target
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     return _OutlineColor;
 }
+
+#endif //TOON_LIT_PASS_OUTLINE

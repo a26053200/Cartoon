@@ -1,4 +1,14 @@
-﻿#pragma once
+﻿// Structs
+/*
+struct VertexPositionInputs
+{
+    float3 positionWS; // World space position
+    float3 positionVS; // View space position
+    float4 positionCS; // Homogeneous clip space position
+    float4 positionNDC;// Homogeneous normalized device coordinates
+};*/
+#ifndef TOON_LIT_PROPERTY
+#define TOON_LIT_PROPERTY
 
 struct Attributes
 {
@@ -14,23 +24,21 @@ struct Attributes
 
 struct Varyings
 {
+    float4 positionCS: SV_POSITION;
     float4 color: COLOR;
     float3 normal: NORMAL;
-    float2 uv: TEXCOORD0;
-    float4 positionCS: SV_POSITION;
+    float3 uv: TEXCOORD0; // z is fogCoord
     float3 positionWS: TEXCOORD1;
     float3 positionVS: TEXCOORD2;
     float4 positionNDC: TEXCOORD3;
     float3 samplePositionVS: TEXCOORD4;
-    //float4 scrPos: TEXCOORD5;
     float3 normalVS: TEXCOORD5;
     float3 viewDirWS: TEXCOORD6;
-    float3 fogFactorAndVertexLight   : TEXCOORD7; // x: fogFactor, yzw: vertex light
 };
     
 CBUFFER_START(UnityPerMaterial)
     //Base
-    float4 _BaseMap_ST, _LightMap_ST, _RampMap_ST;
+    float4 _LightMapMask, _BaseMap_ST, _LightMap_ST, _RampMap_ST;
     //Shadow
     float _ShadowArea, _ShadowSmooth, _DarkShadowArea, _DarkShadowSmooth, _FixDarkShadow;
     float4 _BaseColor, _ShadowMultiColor, _DarkShadowMultiColor;
@@ -54,4 +62,6 @@ TEXTURE2D(_RampMap); SAMPLER(sampler_RampMap);
 TEXTURE2D_X_FLOAT(_CameraDepthTexture); SAMPLER(sampler_CameraDepthTexture);
 #ifdef _FACE
     TEXTURE2D(_FaceLightMap); SAMPLER(sampler_FaceLightMap);
+#endif
+
 #endif

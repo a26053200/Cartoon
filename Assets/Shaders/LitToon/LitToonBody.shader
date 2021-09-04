@@ -6,6 +6,7 @@
         [MainTexture]_BaseMap ("Base Map", 2D) = "white" { }
         _BaseColor ("Base Color", Color) = (0, 0.66, 0.73, 1)
         _LightMap ("Light Map", 2D) = "white" { }
+        _LightMapMask("Shadow Mask", Vector) = (0, 1, 0, 0)
         _RampMap ("Ramp Map", 2D) = "white" { }
         
         [Space]
@@ -55,8 +56,8 @@
         Pass
         {
             Name "BaseCel"
-            Cull Off
             Tags { "LightMode" = "UniversalForward" }
+            Cull Back
             
             HLSLPROGRAM
             
@@ -66,14 +67,10 @@
             #pragma multi_compile_instancing
             #pragma multi_compile_fog
             
-            #pragma shader_feature _ENABLE_RIM
-            #pragma shader_feature _IS_FACE
-            
             #define _RIM
             #define _BODY
             
             #include "ToonLitProperty.hlsl"
-            //#include "ToonLitUtils.hlsl"
             #include "ToonLitCore.hlsl"
             ENDHLSL
         }
@@ -90,12 +87,9 @@
             #pragma vertex VertexOutline
             #pragma fragment FragmentOutline
             
-            #pragma shader_feature_local_vertex _USESMOOTHNORMAL
-            #pragma multi_compile_instancing
-            #pragma shader_feature_local _USE_VERTEX_COLOR
+            #define _USESMOOTHNORMAL
             
             #include "ToonLitPassOutline.hlsl"
-            //#include "URPToonOutlinePass.hlsl"
             ENDHLSL
         }
         
@@ -106,7 +100,7 @@
 
             ZWrite On
             ColorMask 0
-            Cull[_Cull]
+            Cull Back
 
             HLSLPROGRAM
             #pragma exclude_renderers gles gles3 glcore

@@ -16,7 +16,7 @@
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
         
         ENDHLSL
-         /*
+         
         Pass
         {
             Name "BaseCel"
@@ -29,16 +29,12 @@
 
             #pragma multi_compile_instancing
             
-            #pragma shader_feature _ENABLE_RIM
-            #pragma shader_feature _IS_FACE
-            
-            #include "ToonLitProperty.hlsl"
-            //#include "ToonLitUtils.hlsl"
-            #include "ToonLitCore.hlsl"
-            
+            //#include "ToonLitProperty.hlsl"
+            //#include "ToonLitCore.hlsl"
+            #include "ToonLitPassTexture.hlsl"
             ENDHLSL
         }
-        */
+        
         //easy outline pass
         /*
         Pass
@@ -61,7 +57,7 @@
             ENDHLSL
         }
         //this Pass copy from https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
-        */
+        
         Pass
         {
             Name "ShadowCaster"
@@ -85,6 +81,7 @@
             ENDHLSL
             
         }
+        */
         
     }
     //CustomEditor "URPToon.LitToonShaderGUI"

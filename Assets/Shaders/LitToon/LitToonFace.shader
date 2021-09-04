@@ -33,7 +33,6 @@
         {
             Name "BaseCel"
             
-            
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -43,7 +42,6 @@
             #define _FACE
             
             #include "ToonLitProperty.hlsl"
-            //#include "ToonLitUtils.hlsl"
             #include "ToonLitCore.hlsl"
 
             ENDHLSL
@@ -66,6 +64,7 @@
             #pragma multi_compile_instancing
             
             #include "ToonLitPassOutline.hlsl"
+            
             ENDHLSL
         }
         
@@ -76,11 +75,9 @@
 
             ZWrite On
             ColorMask 0
-            Cull[_Cull]
+            Cull Back
 
             HLSLPROGRAM
-            #pragma exclude_renderers gles gles3 glcore
-            #pragma target 4.5
 
             #pragma vertex DepthOnlyVertex
             #pragma fragment DepthOnlyFragment

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Body_0
-  m_Shader: {fileID: 4800000, guid: 4152dae44ef948d6803bc396710f8c2c, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8be45e5fa2644c33acf831dcb41c88fb, type: 3}
   m_ShaderKeywords: _USECOLOR_OFF
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -112,9 +112,9 @@ Material:
     - _RimBrightness: 0.352
     - _RimMax: 0.012
     - _RimMin: 0.012
-    - _RimOffsetMul: 0.0058
-    - _RimStrength: 0.097
-    - _RimThreshold: 1
+    - _RimOffsetMul: 0.001
+    - _RimStrength: 0.448
+    - _RimThreshold: 0.335
     - _ShadowArea: 0.602
     - _ShadowSmooth: 0
     - _Smoothness: 0.5
