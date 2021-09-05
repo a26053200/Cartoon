@@ -45,6 +45,13 @@ float4 TransformHClipToViewPortPos(float4 positionCS)
     return o / o.w;
 }
 
+half WrapRampNL(half nl, half threshold, half smoothness)
+{
+    nl = nl * 0.5 + 0.5;
+    nl = smoothstep(threshold - smoothness * 0.5, threshold + smoothness * 0.5, nl);
+    return nl;
+}
+
 half4 frag(Varyings i) : SV_Target
 {
     half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv.xy) * _BaseColor;
@@ -57,8 +64,15 @@ half4 frag(Varyings i) : SV_Target
     half3 N = normalize(i.normal);
     half3 L = normalize(light.direction);
     half3 V = normalize(i.viewDirWS);
+    half3 H = normalize(L + V);
     half NdotL = max(0, dot(N, L));
-    half lambert = NdotL * 0.5 + 0.5;    
+    half NdotH = max(0, dot(N, H));
+    half NdotV = dot(N, V);
+    half lambert = NdotL * 0.5 + 0.5;   
+    //half lambert = WrapRampNL(NdotL, _Threshold, _Smoothness);//NdotL * 0.5 + 0.5; 
+    
+    half3 finalShadow;
+    
 #ifdef _BODY
     half4 lightMap = SAMPLE_TEXTURE2D(_LightMap, sampler_LightMap, i.uv.xy);
     half3 shadowColor = baseMap.rgb * _ShadowMultiColor.rgb;
@@ -82,12 +96,11 @@ half4 frag(Varyings i) : SV_Target
     
     //如果SFactor = 0,FinalColor为二级阴影，否则为一级阴影。
     sFactor = floor(shadowMask * i.color.r + 0.9f);
-    half3 finalShadow = sFactor * shallowShadowColor + (1 - sFactor) * darkShadowColor;
+    finalShadow = sFactor * shallowShadowColor + (1 - sFactor) * darkShadowColor;
     finalColor.rgb = lerp(finalShadow, baseMap.rgb, baseMap.a);
     
     // Specular Blinn-Phong
-    float3 H = normalize(L + V);
-    float NdotH = saturate(dot(N, H));
+    
     float specularIntensity = pow(NdotH, _Glossiness);
     //float specularRange = step(_SpecularRange, specularIntensity);
     specularIntensity = step(1.0f - lightMap.b, specularIntensity);
@@ -99,7 +112,7 @@ half4 frag(Varyings i) : SV_Target
     //finalColor.rgb += lerp(specular.rgb, 0, baseMap.a);
     //finalColor.rgb = lerp((finalColor.rgb + specular.rgb) * _BaseColor.rgb, finalColor.rgb, baseMap.a);
 #endif
-
+    
 //基于深度的硬边缘光
     float3 rimColor = 0;
 #ifdef _RIM
@@ -124,7 +137,7 @@ half4 frag(Varyings i) : SV_Target
     //rimColor = rimIntensity.xxx;
     //rimColor = rimRatio.xxx * _RimStrength;
     rimColor = lerp(0, _RimColor.rgb, rimIntensity);
-    finalColor.rgb += rimColor * _RimStrength;
+    finalColor.rgb += lerp(0, rimColor * _RimStrength, NdotV);
     //rimColor = rimIntensity.xxx;
 #endif
 
@@ -172,7 +185,7 @@ half4 frag(Varyings i) : SV_Target
     //finalColor.rgb = rimColor;
     
     // Mix Fog
-    finalColor.rgb = MixFog(finalColor.rgb, i.uv.z);
+    //finalColor.rgb = MixFog(finalColor.rgb, i.uv.z);
     
     return half4(finalColor.rgb, 1);
 }

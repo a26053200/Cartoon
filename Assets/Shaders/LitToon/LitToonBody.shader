@@ -8,6 +8,8 @@
         _LightMap ("Light Map", 2D) = "white" { }
         _LightMapMask("Shadow Mask", Vector) = (0, 1, 0, 0)
         _RampMap ("Ramp Map", 2D) = "white" { }
+        _Threshold("Diffuse Threshold", Range(0, 1)) = 0.5 //0.35
+        _Smoothness("Diffuse Smoothness", Range(0, 1)) = 0.5 //0.2,0.5,0.8
         
         [Space]
         [Header(Shadow)][Space]
@@ -57,7 +59,7 @@
         {
             Name "BaseCel"
             Tags { "LightMode" = "UniversalForward" }
-            Cull Back
+            Cull Off
             
             HLSLPROGRAM
             
@@ -74,7 +76,7 @@
             #include "ToonLitCore.hlsl"
             ENDHLSL
         }
-        
+        /*
         //easy outline pass
         Pass
         {
@@ -92,7 +94,7 @@
             #include "ToonLitPassOutline.hlsl"
             ENDHLSL
         }
-        
+        */
         Pass
         {
             Name "DepthOnly"

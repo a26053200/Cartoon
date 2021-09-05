@@ -40,7 +40,7 @@ CBUFFER_START(UnityPerMaterial)
     //Base
     float4 _LightMapMask, _BaseMap_ST, _LightMap_ST, _RampMap_ST;
     //Shadow
-    float _ShadowArea, _ShadowSmooth, _DarkShadowArea, _DarkShadowSmooth, _FixDarkShadow;
+    float _Threshold, _Smoothness, _ShadowArea, _ShadowSmooth, _DarkShadowArea, _DarkShadowSmooth, _FixDarkShadow;
     float4 _BaseColor, _ShadowMultiColor, _DarkShadowMultiColor;
     //Specular
     float _Glossiness, _SpecularRange;
