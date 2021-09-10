@@ -18,11 +18,17 @@ Shader "LitPBR/Avatar/PBRBody"
         [Space]
         [Header(Specular)][Space]
         _Smoothness("Smoothness", Range(0.0, 1.0)) = 0.5
-        _GlossMapScale("Smoothness Scale", Range(0.0, 1.0)) = 1.0
-        _SmoothnessTextureChannel("Smoothness texture channel", Float) = 0
+        //_GlossMapScale("Smoothness Scale", Range(0.0, 1.0)) = 1.0
+        //_SmoothnessTextureChannel("Smoothness texture channel", Float) = 0
         _Metallic("Metallic", Range(0.0, 1.0)) = 0.0
-        _SpecColor("Specular", Color) = (0.2, 0.2, 0.2)
-        _OcclusionStrength("Strength", Range(0.0, 1.0)) = 1.0
+        _SpecColor("Specular", Color) = (0.2, 0.2, 0.2, 1)
+        _OcclusionStrength("Occlusion Strength", Range(0.0, 1.0)) = 1.0
+        _Roughness("Roughness", Range(0.0, 1.0)) = 1.0
+        
+        _Sheen("Sheen", Range(0.0, 1.0)) = 0.0
+        _SheenColor("Sheen Color", Color) = (1,1,1,1)
+        _Subsurface("Subsurface", Range(0.0, 1.0)) = 0.0
+        _Anisotropic("Anisotropic", Range(0.0, 1.0)) = 0.0
         
     }
     SubShader
@@ -65,6 +71,8 @@ Shader "LitPBR/Avatar/PBRBody"
             
             #include "PBRLitProperty.hlsl"
             #include "PBRLitUtils.hlsl"
+            #include "PBRLitLighting.hlsl"
+            #include "DisneyBRDF.hlsl"
             #include "PBRLitPassForward.hlsl" 
             
             ENDHLSL

@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -17,8 +18,13 @@ public class FaceDirection : MonoBehaviour
     private static readonly int FaceRight = Shader.PropertyToID("_FaceRight");
     private void Awake()
     {
-        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
-        _materials = meshRenderer.sharedMaterials;
+        Renderer[] renderers = gameObject.GetComponentsInChildren<Renderer>(true);
+        List<Material> materials = new List<Material>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            materials.AddRange(renderers[i].sharedMaterials);
+        }
+        _materials = materials.ToArray();
     }
 
     private void Update()
@@ -26,7 +32,8 @@ public class FaceDirection : MonoBehaviour
         for (int i = 0; i < _materials.Length; i++)
         {
             Material mat = _materials[i];
-            mat.SetVector(FaceFront, transform.forward);
+            var forward = transform.forward;
+            mat.SetVector(FaceFront, forward);
             mat.SetVector(FaceUp, transform.up);
             var right = transform.right;
             mat.SetVector(FaceRight, right);

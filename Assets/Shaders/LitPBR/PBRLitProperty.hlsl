@@ -56,9 +56,9 @@ CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST;
     
     //color
-    float4 _BaseColor, _SpecularColor;
+    float4 _BaseColor, _SpecColor, _SheenColor;
     
     //float
-    float _Cutoff, _BumpScale, _Threshold, _Smoothness, _Roughness, _SpecularSmoothness, _SpecularBlend;
+    float _Cutoff, _BumpScale, _Threshold, _Smoothness, _Roughness, _SpecularSmoothness, _SpecularBlend, _Metallic, _Sheen, _Subsurface, _Anisotropic;
 CBUFFER_END
 #endif

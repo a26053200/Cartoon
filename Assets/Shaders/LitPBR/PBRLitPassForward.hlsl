@@ -32,33 +32,43 @@ Varyings vert(Attributes input)
     output.viewDirWS = viewDirWS;
     output.positionWS = vertexInput.positionWS;
     output.shadowCoord = GetShadowCoord(vertexInput);
-    
-    
-    
-    /*
-    // 计算世界坐标下的顶点，法线，切线，副法线
-    float3 worldPos = output.positionWS;
-    half3 worldNormal = output.normal;
-    half3 worldTangent = TransformObjectToWorldDir(input.tangent.xyz);
-    half3 worldBinormal = cross(worldNormal, worldTangent) * input.tangent.w;
-    // 计算从切线空间到世界空间的方向变换矩阵
-    // 按列摆放得到从切线转世界空间的变换矩阵
-    output.TtoW0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);
-    output.TtoW1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);
-    output.TtoW2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);
-    */
+
     output.color = input.color;
     return output;
 }
 
+
+void InitSurfaceData(float2 uv, out PBRSurfaceData outSurfaceData)
+{
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);
+    half4 maskMap = SAMPLE_TEXTURE2D(_Mask, sampler_Mask, uv);
+
+    outSurfaceData.albedo = albedoAlpha.rgb * _BaseColor.rgb;
+    outSurfaceData.metallic = maskMap.g * _Metallic;
+    outSurfaceData.specular = _SpecColor.rgb * _SpecColor;
+    outSurfaceData.roughness = maskMap.r * _Roughness;
+    outSurfaceData.smoothness = (1 - maskMap.r) * _Smoothness;
+    //outSurfaceData.normalTS = SampleNormal(uv, TEXTURE2D_ARGS(_BumpMap, sampler_BumpMap), _BumpScale);
+    outSurfaceData.occlusion = maskMap.b;
+    outSurfaceData.emission = 0;
+    outSurfaceData.alpha = 0;
+    outSurfaceData.clearCoatMask       = 0.0h;
+    outSurfaceData.clearCoatSmoothness = 1.0h;
+}
+
 half4 frag(Varyings input) : SV_Target
 {
-    half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv.xy);
-    half4 maskMap = SAMPLE_TEXTURE2D(_Mask, sampler_Mask, input.uv.xy);
-    
     //lighting
     Light light = GetMainLight(input.shadowCoord);
     real shadow = light.shadowAttenuation * light.distanceAttenuation;
+    
+    PBRSurfaceData surfaceData;
+    InitSurfaceData(input.uv.xy, surfaceData);
+    
+    
+    float3 X = input.tangentWS;
+    float3 bitangent = input.tangentWS.w * cross(input.normalWS.xyz, input.tangentWS.xyz); // should be either +1 or -1
+    float3 Y = bitangent;
     
     half3 N = input.normalWS;
     #if defined(ENABLE_BUMPMAP)
@@ -80,11 +90,24 @@ half4 frag(Varyings input) : SV_Target
     
     half diffuse = NdotL * 0.5 + 0.5;
     
-    half3 finalColor = baseMap.rgb * diffuse * light.color;
+    //half3 finalColor = baseMap.rgb * diffuse * light.color;
+    
+    half3 finalColor = DisneyBRDF(L, V, N, X, Y, 
+        surfaceData.albedo,
+        surfaceData.roughness,
+        surfaceData.metallic,
+        surfaceData.specular,
+        _SpecColor,
+        _Sheen,
+        _SheenColor,
+        surfaceData.clearCoatMask,
+        surfaceData.clearCoatSmoothness,
+        _Subsurface,
+        _Anisotropic);
     //debug
     //finalColor.rgb = specColor.rgb;
     //clip(baseMap.a - _Cutoff);
     
-    finalColor = MixFog(finalColor, input.uv.z);
+    //finalColor = MixFog(finalColor, input.uv.z);
     return half4(finalColor.rgb, 1);
 }

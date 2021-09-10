@@ -8,7 +8,7 @@
          _Cutoff("_Cutoff (Alpha Cutoff)", Range(0.0, 1.0)) = 0.5
          
         [Space]
-        _Mask("Mask R(高光区域) G(粗糙度) B(高光强度) A(AO)", 2D) = "white" {}
+        _Mask("Mask R(粗糙度) G(高光区域) B(AO) A(MASK)", 2D) = "white" {}
         
         [Space]
         _BumpMap("Normal Map", 2D) = "bump" {}
@@ -21,7 +21,7 @@
         
         [Space]
         [Header(Specular)][Space]
-        _Roughness("Roughness", Range(0, 1)) = 0
+        _Roughness("Roughness", Range(0.001, 1)) = 0
         _SpecularColor("Specular Color", Color) = (1,1,1,1)
         _SpecularSmoothness("Specular Smoothness", Range(0, 2)) = 0.5
         _SpecularBlend("Specular Blend", Range(0, 1)) = 0.5
@@ -31,11 +31,9 @@
     }
     SubShader
     {
-        //Tags { "RenderType" = "Opaque" "Queue" = "Geometry" "RenderPipeline" = "UniversalRenderPipeline" }
-        
+        Tags { "RenderType" = "Opaque" "Queue" = "Geometry" "RenderPipeline" = "UniversalRenderPipeline" }
         //Tags {"RenderType" = "Transparent" "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
-        
-        Tags {"RenderType" = "TransparentCutout" "Queue" = "AlphaTest" "RenderPipeline" = "UniversalPipeline" }
+        //Tags {"RenderType" = "TransparentCutout" "Queue" = "AlphaTest" "RenderPipeline" = "UniversalPipeline" }
         
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -47,7 +45,7 @@
         {
             Name "BaseCel"
             Tags { "LightMode" = "UniversalForward" }
-            Blend SrcAlpha OneMinusSrcAlpha
+            //Blend SrcAlpha OneMinusSrcAlpha
             Cull Back
             
             HLSLPROGRAM
@@ -193,15 +191,16 @@
                 half RdotL = max(0, dot(R, L));
                 half NdotH = max(0, dot(N, H));
                 
-                half diffuse = WrapRampNL(NdotL, _Threshold, _Smoothness);//NdotL * 0.5 + 0.5;
-                
                 //Spec
-                half roughness = maskMap.g * _Roughness;
+                half roughness = max(0.01, maskMap.r * _Roughness);
+                roughness = sqrt(roughness) * 0.85;
+                
+                half diffuse = WrapRampNL(NdotL, _Threshold, (1 - roughness) * _Smoothness);//NdotL * 0.5 + 0.5;
                 half specularTerm = CalcSpecular(roughness, RdotL, NdotH, H, N);
-                half r = sqrt(roughness) * 0.85;
-                half styleSpec = StylizedSpecular(specularTerm, _SpecularSmoothness) * (1 / r);
+                
+                half styleSpec = StylizedSpecular(specularTerm, _SpecularSmoothness) * (1 / roughness);
                 specularTerm = lerp(specularTerm, styleSpec, _SpecularBlend);
-                half3 specColor = lerp(0, _SpecularColor * specularTerm, maskMap.r) * maskMap.b;
+                half3 specColor = lerp(0, _SpecularColor * specularTerm, maskMap.g);
                 
                 /*
                 //BlinPhong
@@ -213,7 +212,7 @@
                 half3 finalColor = baseMap.rgb * diffuse * light.color + specColor;
                 //debug
                 //finalColor.rgb = specColor.rgb;
-                clip(baseMap.a - _Cutoff);
+                //clip(baseMap.a - _Cutoff);
                 return half4(finalColor.rgb, 1);
             }
             ENDHLSL
