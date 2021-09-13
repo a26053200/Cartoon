@@ -143,7 +143,7 @@ float3 SkinTranslucency(float3 L, float3 N, float3 V, float3 transCol, float3 li
     return translucency;
 }
 
-float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, float3 X, float3 Y, float shadowAttenuation)
+float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, float3 X, float3 Y, float shadowAttenuation, float3 reflectColor)
 {    
     float NdotL = max(dot(N,L),0.0);
     float NdotV = max(dot(N,V),0.0);
@@ -154,7 +154,7 @@ float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, f
     float VdotH = max(dot(V,H),0.0);
 
     float3 Cdlin = surfaceData.albedo;
-
+    float3 specColor = reflectColor;
     //sss
 
 #ifdef _OPTIMIZE
@@ -176,7 +176,7 @@ float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, f
     //spe = saturate(spe - 6.103515625*2.718281828459-5);
     //return specularTerm*NdotL.xxx;
     //return brdfSpe * NdotL;
-    return Fd * Cdlin * (1-surfaceData.metallic) + specularTerm*brdfSpe*NdotL + translucency;
+    return Fd * Cdlin * (1-surfaceData.metallic) + specularTerm*brdfSpe * NdotL + translucency;
 
 #else
     // Diffuse fresnel - go from 1 at normal incidence to .5 at grazing
@@ -194,8 +194,8 @@ float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, f
 
     float Cdlum = 0.3 * Cdlin.r + 0.6 * Cdlin.g  + 0.1 * Cdlin.b; // luminance approx.
     //float3 Ctint = Cdlum > 0 ? Cdlin / Cdlum : float3(1,1,1); // normalize lum. to isolate hue+sat
-    float3 Ctint = lerp(float3(1,1,1), Cdlin / Cdlum, step(Cdlum, 0));
-    float3 Cspec0 = lerp(surfaceData.specular *.08 * lerp(float3(1,1,1), Ctint, surfaceData.specularTint), Cdlin, surfaceData.metallic);
+    float3 Ctint = lerp(specColor, Cdlin / Cdlum, step(Cdlum, 0));
+    float3 Cspec0 = lerp(surfaceData.specular *.08 * lerp(specColor, Ctint, surfaceData.specularTint), Cdlin, surfaceData.metallic);
     
     // specular
     float aspect = sqrt(1-surfaceData.anisotropic*.9);
@@ -208,7 +208,7 @@ float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, f
     Gs *= smithG_GGX_aniso(NdotV, dot(V, X), dot(V, Y), ax, ay);
     float spe = Gs * Fs * Ds * NdotL;
     // sheen
-    float3 Csheen = lerp(float3(1,1,1), Ctint, surfaceData.sheenTint);
+    float3 Csheen = lerp(specColor, Ctint, surfaceData.sheenTint);
     float3 Fsheen = FH * surfaceData.sheen * Csheen * surfaceData.sheenTint;
  
     // clearcoat (ior = 1.5 -> F0 = 0.04)
@@ -220,18 +220,18 @@ float3 DisneyBRDF(DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, f
     float3 diffuse = lerp(Fd, ss, saturate(surfaceData.subsurface * (1 - NdotL) + 0.5)) * Cdlin * NdotL;
     //diffuse += Fsheen;
     //return diffuse;
-    float3 specColor = spe * PI + PI * 0.25 * surfaceData.clearcoat * Gr * Fr * Dr;
-    return specColor;
-    return (diffuse * (1 - surfaceData.metallic) + specColor) * shadowAttenuation + 0;
+    float3 lightColor = spe * PI + PI * 0.25 * surfaceData.clearcoat * Gr * Fr * Dr;
+    return lightColor;
+    return (diffuse * (1 - surfaceData.metallic) + lightColor) * shadowAttenuation + 0;
 #endif
 
 }
 
 float3 DisneyPBR(DisneySurfaceData surfaceData, Light light, float3 normalWS, float3 viewDirectionWS,
-                float3 tangentWS, float3 binormalWS)
+                float3 tangentWS, float3 binormalWS, float3 reflectColor)
 {
     //return float4(light.color,1);
-    return light.color * light.distanceAttenuation * 1 * DisneyBRDF(surfaceData, light.direction,viewDirectionWS,normalWS,tangentWS,binormalWS,light.shadowAttenuation);
+    return light.color * light.distanceAttenuation * 1 * DisneyBRDF(surfaceData, light.direction,viewDirectionWS,normalWS,tangentWS,binormalWS,light.shadowAttenuation, reflectColor);
 }
 
 float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData disneySurfaceData)
@@ -244,12 +244,12 @@ float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData dis
 
     float3 color = DisneyPBR(disneySurfaceData, mainLight,
                         disneyInputData.normalWS, disneyInputData.viewDirectionWS,
-                        disneyInputData.tangentWS, disneyInputData.bitangentWS);
+                        disneyInputData.tangentWS, disneyInputData.bitangentWS, disneySurfaceData.reflectColor);
     //return float4(color,1);
     float3 sssColor = SkinTranslucency(mainLight.direction,disneyInputData.normalWS,
                     disneyInputData.viewDirectionWS,disneySurfaceData.albedo,
                     disneySurfaceData.subsurface,mainLight.color,mainLight.shadowAttenuation);
-    color += lerp(sssColor, 0, step(disneySurfaceData.roughness, _SSSThreshold));
+    color += sssColor;//lerp(sssColor, 0, step(disneySurfaceData.roughness, _SSSThreshold));
     
     color += GlobalIllumination(brdfData, disneyInputData.bakedGI, disneySurfaceData.occlusion, disneyInputData.normalWS, disneyInputData.viewDirectionWS);
 #ifdef _ADDITIONAL_LIGHTS

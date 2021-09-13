@@ -20,7 +20,7 @@ CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST;
     
     //color
-    float4 _BaseColor, _SpecularColor, _EmissionColor;
+    float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor;
     
     float _Cutoff, _SSSThreshold;
     
@@ -97,6 +97,7 @@ struct DisneySurfaceData
     float3  sheenTint;
     float   clearcoat;
     float   clearcoatGloss;
+    float3  reflectColor;
 };
 
 struct DisneyInputData
@@ -125,21 +126,23 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     float4 maskMap = SAMPLE_TEXTURE2D(_MaskMap,sampler_MaskMap,uv);
     //float4 maskMap2 = SAMPLE_TEXTURE2D(_MaskMap2,sampler_MaskMap2,uv);
 
-    outSurfaceData.metallic = _Metallic;
-    outSurfaceData.roughness = _Roughness * maskMap.r;
+    outSurfaceData.anisotropic = lerp(0, _Anisotropic, baseColorMap.a);
+    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, baseColorMap.a), 0, maskMap.g);
+    
+    outSurfaceData.metallic = lerp(0, lerp(_Metallic, 0, baseColorMap.a), maskMap.g);
+    outSurfaceData.roughness = lerp(_Roughness * maskMap.r, 1, outSurfaceData.subsurface);
     outSurfaceData.occlusion = lerp(1, maskMap.b, _Occlusion);
     
     float smoothness = 1 - outSurfaceData.roughness * outSurfaceData.roughness;
 
     outSurfaceData.specular = _Specular * smoothness;
-    outSurfaceData.specularTint = _SpecularTint * outSurfaceData.albedo;
+    outSurfaceData.specularTint = _SpecularTint * _SpecularColor;
     outSurfaceData.sheen = _Sheen;
-    outSurfaceData.sheenTint = _SheenTint * outSurfaceData.albedo;
+    outSurfaceData.sheenTint = _SheenTint * _SheenColor;
     outSurfaceData.clearcoat = _Clearcoat;
     outSurfaceData.clearcoatGloss = _ClearcoatGloss * smoothness;
     
-    outSurfaceData.subsurface = _Subsurface;
-    outSurfaceData.anisotropic = lerp(0, _Anisotropic, baseColorMap.a);
+    outSurfaceData.reflectColor = _ReflectColor.rgb;
 }
 
 
@@ -169,6 +172,7 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
 inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,out BRDFData outBRDFData)
 {
     outBRDFData = (BRDFData)0;
+    
     //IBL
     float oneMinusReflectivity = OneMinusReflectivityMetallic(metallic);
     float reflectivity = 1.0 - oneMinusReflectivity;

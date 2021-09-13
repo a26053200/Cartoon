@@ -13,8 +13,13 @@ Shader "DinesyLit/DinesyLit"
         _BumpMap("Normal Map", 2D) = "bump" {}
         
         [Space]
-        _MaskMap("Mask Map", 2D) = "bump" {}
         //_MaskMap2("Mask Map 2", 2D) = "bump" {}
+        _MaskMap("Mask Map", 2D) = "bump" {}
+        
+        [Space]
+        [Header(Base)][Space]
+        _Anisotropic("Anisotropic",     Range(0,1)) = 0
+        _Occlusion("Occlusion",       Range(0,1)) = 0.5
         
         [Space]
         [Header(Metallic)][Space]
@@ -25,25 +30,25 @@ Shader "DinesyLit/DinesyLit"
         [Header(Specular)][Space]
         _Specular("Specular",           Range(0,1)) = 0.5
         _SpecularTint("SpeculatTint",   Range(0,1)) =0.5
-        /*
+        _ReflectColor("Reflect Color", Color) = (1,1,1,1)
+        //_SpecularColor("Specular Color", Color) = (1,1,1,1)
+        
         [Space]
         [Header(Sheen)][Space]
         _Sheen("Sheen",                Range(0,1)) = 0
         _SheenTint("SheenTint",         Range(0,1)) = 0.5
-        */
+        //_SheenColor("Sheen Color",  Color) = (1,1,1,1)
+        
         [Space]
         [Header(Clearcoat)][Space]
         _ClearcoatGloss("ClearcoatGloss",Range(0,1)) = 1
         _Clearcoat("Clearcoat",         Range(0,1)) = 1
-        
+        //_ClearcoatColor("Clearcoat Color", Color) = (1,1,1,1)
         
         [Space]
         [Header(SSS)][Space]
         _Subsurface("Subsurface",       Range(0,1)) = 0.5
-        _SSSThreshold("SSS Threshold",       Range(0,1)) = 0.5
-        
-        [Space]
-        [Header(Translucency)][Space]
+        //_SSSThreshold("SSS Threshold",       Range(0,1)) = 0.5
         _Translucency("Strength", Range( 0 , 50)) = 1
 		_TransNormalDistortion("Normal Distortion", Range( 0 , 1)) = 0.5
 		_TransScattering("Scaterring Power", Range( 1 , 50)) = 1
@@ -51,10 +56,6 @@ Shader "DinesyLit/DinesyLit"
 		_TransAmbient("Ambient", Range( 0 , 1)) = 0.2
         _TransShadow("TransShadow",Range(0,1)) = 0.5
         
-        [Space]
-        [Header(Other)][Space]
-        _Occlusion("Occlusion",       Range(0,1)) = 0.5
-        _Anisotropic("Anisotropic",     Range(0,1)) = 0
     }
     SubShader
     {
