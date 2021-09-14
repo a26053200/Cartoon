@@ -7,25 +7,24 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Direct Light Ball
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_ShaderKeywords: 
+  m_Name: Horse_White_Fast
+  m_Shader: {fileID: 4800000, guid: 072929711abb44ee88dfb08a1e7c1de8, type: 3}
+  m_ShaderKeywords: _METALLICSPECGLOSSMAP _NORMALMAP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
-  stringTagMap:
-    RenderType: Opaque
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 9b55db8fa3104a645a3e6a63a6f3509e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 2a63d76a1c06d9848ab9ffe1eb1a859b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -44,12 +43,24 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _LUT:
+        m_Texture: {fileID: 2800000, guid: c1bb1b96b94f1ab46a8c8d1bb218bf2e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: b42ecc602dbfff749a40ee330cf4c00e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Mask:
+        m_Texture: {fileID: 2800000, guid: ce970ec6a24caed4c9d9c2ea8a0d7048, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskMap:
+        m_Texture: {fileID: 2800000, guid: ce970ec6a24caed4c9d9c2ea8a0d7048, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ce970ec6a24caed4c9d9c2ea8a0d7048, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -78,12 +89,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _AlphaClip: 0
+    - _Anisotropic: 0
     - _Blend: 0
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _Clearcoat: 1
+    - _ClearcoatGloss: 1
     - _Cull: 2
-    - _Cutoff: 0.5
+    - _Cutoff: 0.29
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -92,22 +106,44 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
+    - _Occlusion: 0.578
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Smoothness: 0
+    - _Roughness: 0
+    - _ShadowArea: 0.5
+    - _ShadowSmooth: 0.5
+    - _Sheen: 0
+    - _SheenTint: 1
+    - _Smoothness: 0.66
     - _SmoothnessTextureChannel: 0
+    - _Specular: 0.246
+    - _SpecularBlend: 1
     - _SpecularHighlights: 1
+    - _SpecularSmooth: 0.5
+    - _SpecularSmoothness: 0.394
+    - _SpecularTint: 0.5
     - _SrcBlend: 1
+    - _Subsurface: 0
     - _Surface: 0
+    - _Threshold: 0.572
+    - _TransAmbient: 0.2
+    - _TransDirect: 0.5
+    - _TransNormalDistortion: 0.5
+    - _TransScattering: 1
+    - _TransShadow: 0.5
+    - _Translucency: 1
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SheenColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &1584640648037997391
 MonoBehaviour:
