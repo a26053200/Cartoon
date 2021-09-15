@@ -18,11 +18,12 @@ struct VertexPositionInputs
 CBUFFER_START(UnityPerMaterial)
     //ST
     float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST, _LUT_ST, _NoiseTex_ST;
-    
     //color
     float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor;
     
     float _Cutoff, _Gloss1, _Gloss2, _Shift1, _Shift2, _SSSThreshold;
+    
+    float _SubsurfaceRange, _SSSPower, _SSSOffset, _SSSScale;
     
     float _Smoothness;
     
@@ -31,21 +32,9 @@ CBUFFER_START(UnityPerMaterial)
     float _Roughness;
     float _Metallic;
     float _Specular;
-    float _SpecularTint;
-    float _Sheen;
-    float _SheenTint;
-    float _ClearcoatGloss;
-    float _Clearcoat;
     float _Occlusion;
     float _Subsurface;
     float _Anisotropic;
-    
-    float  _Translucency;
-    float  _TransNormalDistortion;
-    float  _TransScattering;
-    float  _TransDirect;
-    float  _TransAmbient;
-    float  _TransShadow;
 CBUFFER_END
 
 
@@ -53,8 +42,7 @@ CBUFFER_END
     TEXTURE2D(_BaseMap);    SAMPLER(sampler_BaseMap);
     TEXTURE2D(_BumpMap);    SAMPLER(sampler_BumpMap);
     TEXTURE2D(_MaskMap);    SAMPLER(sampler_MaskMap);
-    TEXTURE2D(_LUT);        SAMPLER(sampler_LUT);
-    TEXTURE2D(_NoiseTex);   SAMPLER(sampler_NoiseTex);
+    TEXTURE2D(_ShiftTex);   SAMPLER(sampler_ShiftTex);
     
 struct Attributes
 {
@@ -71,38 +59,19 @@ struct Varyings
 {
     float4 positionCS               : SV_POSITION;
     float3 color                    : COLOR;
-    //float4 normalWS                 : NORMAL;
+    float4 normalWS                 : NORMAL;
     float2 uv                       : TEXCOORD0;
     DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 1);    // lightmapUV & vertexSH
     float3 positionWS               : TEXCOORD2;
     float4 tangentWS                : TEXCOORD3;    
     float4 bitangentWS              : TEXCOORD4;    
-    float4 normalWS                 : TEXCOORD5;
-    float4 shadowCoord              : TEXCOORD6;
-    float4 fogFactorAndVertexLight  : TEXCOORD7;
+    float4 shadowCoord              : TEXCOORD5;
+    float4 fogFactorAndVertexLight  : TEXCOORD6;
     
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
-    
-struct DisneySurfaceData
-{
-    float3  albedo;
-    float  emission;
-    float3  normalTS;
-    float   metallic;
-    float   roughness;
-    float   subsurface;
-    float   occlusion;
-    float   specular;
-    float3  specularTint;
-    float   anisotropic;
-    float   sheen;
-    float3  sheenTint;
-    float   clearcoat;
-    float   clearcoatGloss;
-    float3  reflectColor;
-};
+ 
 
 struct DisneyInputData
 {
@@ -117,6 +86,21 @@ struct DisneyInputData
     float3  vertexLighting;
     float3  bakedGI;
 };
+   
+struct DisneySurfaceData
+{
+    float3  albedo;
+    float  emission;
+    float3  normalTS;
+    float   metallic;
+    float   roughness;
+    float   subsurface;
+    float   occlusion;
+    float3  specularColor;
+    float   anisotropic;
+    float   anisotropicShift;
+    float   anisotropicGloss;
+};
 
 void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData)
 {
@@ -128,29 +112,24 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv));
     
     float4 maskMap = SAMPLE_TEXTURE2D(_MaskMap,sampler_MaskMap,uv);
+    float4 noiseTex = SAMPLE_TEXTURE2D(_ShiftTex,sampler_ShiftTex,uv);
     //float4 maskMap2 = SAMPLE_TEXTURE2D(_MaskMap2,sampler_MaskMap2,uv);
 
     half r = maskMap.r;
     half g = maskMap.g;
-    outSurfaceData.anisotropic = lerp(0, _Anisotropic, baseColorMap.a);
-    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, baseColorMap.a), 0, g);
+    half b = maskMap.b;
+    half a = baseColorMap.a;
     
-    outSurfaceData.metallic = lerp(0, lerp(_Metallic, 0, baseColorMap.a), g);
-    outSurfaceData.roughness = lerp(_Roughness * r, 1, outSurfaceData.subsurface);
-    //outSurfaceData.metallic = _Metallic;
-    //outSurfaceData.roughness = _Roughness;
-    outSurfaceData.occlusion = lerp(1, maskMap.b, _Occlusion);
+    outSurfaceData.anisotropic = lerp(0, _Anisotropic, a);
+    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
+    outSurfaceData.anisotropicShift = noiseTex.r - _Shift2;
+    outSurfaceData.anisotropicGloss = _Gloss2;
     
-    float smoothness = 1 - outSurfaceData.roughness * outSurfaceData.roughness;
-
-    outSurfaceData.specular = _Specular * smoothness;
-    outSurfaceData.specularTint = _SpecularTint * _SpecularColor;
-    outSurfaceData.sheen = _Sheen;
-    outSurfaceData.sheenTint = _SheenTint * _SheenColor;
-    outSurfaceData.clearcoat = _Clearcoat;
-    outSurfaceData.clearcoatGloss = _ClearcoatGloss * smoothness;
+    outSurfaceData.metallic = lerp(0, lerp(_Metallic, 0, a), g);
+    outSurfaceData.roughness = _Roughness * r;//lerp(_Roughness * r, 1, outSurfaceData.subsurface);
+    outSurfaceData.occlusion = lerp(1, b, _Occlusion);
     
-    outSurfaceData.reflectColor = _ReflectColor.rgb;
+    outSurfaceData.specularColor = _SpecularColor;
 }
 
 
@@ -192,6 +171,8 @@ inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,ou
     outBRDFData.perceptualRoughness = roughness;
     outBRDFData.roughness = roughness * roughness;
     outBRDFData.roughness2 = outBRDFData.roughness * outBRDFData.roughness;
+    outBRDFData.normalizationTerm   = outBRDFData.roughness * 4.0h + 2.0h;
+    outBRDFData.roughness2MinusOne  = outBRDFData.roughness2 - 1.0h;
 }
 
 #endif

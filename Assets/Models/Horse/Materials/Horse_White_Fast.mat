@@ -63,12 +63,20 @@ Material:
         m_Texture: {fileID: 2800000, guid: ce970ec6a24caed4c9d9c2ea8a0d7048, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShiftTex:
+        m_Texture: {fileID: 2800000, guid: 5dedf1a7a8fba604698baf9cc471fe93, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -102,20 +110,28 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EnvironmentReflections: 1
+    - _Gloss: 256
+    - _Gloss1: 20
+    - _Gloss2: 20
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 1
-    - _Occlusion: 0.317
+    - _Occlusion: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Roughness: 0
+    - _Roughness: 0.597
+    - _SSSOffset: 0.314
+    - _SSSPower: 39.4
     - _ShadowArea: 0.5
     - _ShadowSmooth: 0.5
     - _Sheen: 0
     - _SheenTint: 1
+    - _Shift: 1
+    - _Shift1: 0
+    - _Shift2: 0
     - _Smoothness: 0.66
     - _SmoothnessTextureChannel: 0
     - _Specular: 0
@@ -126,6 +142,7 @@ Material:
     - _SpecularTint: 0.5
     - _SrcBlend: 1
     - _Subsurface: 0
+    - _SubsurfaceRange: 0.5
     - _Surface: 0
     - _Threshold: 0.572
     - _TransAmbient: 0.2

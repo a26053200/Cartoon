@@ -13,7 +13,7 @@ Shader "FastLit/FastLit"
         _BumpMap("Normal Map", 2D) = "bump" {}
         
         [Space]
-        _LUT("LUT", 2D) = "white" {}
+        //_LUT("LUT", 2D) = "white" {}
         _MaskMap("Mask Map", 2D) = "white" {}
         
         [Space]
@@ -25,44 +25,20 @@ Shader "FastLit/FastLit"
         [Header(Metallic)][Space]
         _Roughness ("Roughness",       Range(0,1)) = 0.5
         _Metallic ("Metallic",          Range(0,1)) = 0.0
-        
-        [Space]
-        [Header(Specular)][Space]
-        _Specular("Specular",           Range(0,1)) = 0.5
-        _SpecularTint("SpeculatTint",   Range(0,1)) =0.5
-        _ReflectColor("Reflect Color", Color) = (1,1,1,1)
-        //_SpecularColor("Specular Color", Color) = (1,1,1,1)
-        
-        [Space]
-        [Header(Sheen)][Space]
-        _Sheen("Sheen",                Range(0,1)) = 0
-        _SheenTint("SheenTint",         Range(0,1)) = 0.5
-        //_SheenColor("Sheen Color",  Color) = (1,1,1,1)
-        
-        [Space]
-        [Header(Clearcoat)][Space]
-        _ClearcoatGloss("ClearcoatGloss",Range(0,1)) = 1
-        _Clearcoat("Clearcoat",         Range(0,1)) = 1
-        //_ClearcoatColor("Clearcoat Color", Color) = (1,1,1,1)
-        
+       
         [Space]
         [Header(SSS)][Space]
         _Subsurface("Subsurface",       Range(0,1)) = 0.5
-        //_SSSThreshold("SSS Threshold",       Range(0,1)) = 0.5
-        _Translucency("Strength", Range( 0 , 50)) = 1
-		_TransNormalDistortion("Normal Distortion", Range( 0 , 1)) = 0.5
-		_TransScattering("Scaterring Power", Range( 1 , 50)) = 1
-		_TransDirect("Direct", Range( 0 , 1)) = .5
-		_TransAmbient("Ambient", Range( 0 , 1)) = 0.2
-        _TransShadow("TransShadow",Range(0,1)) = 0.5
+        _SubsurfaceRange("Subsurface Range",       Range(0,2)) = 0.5
+        _SSSPower("Scaterring Power",       Range(1,50)) = 0.5
+        _SSSOffset("Scaterring Offset",       Range(0,1)) = 0.5
         
         [Space]
         [Header(Anisotropic)][Space]
-        _Gloss1("Gloss1", Range(8.0, 256)) = 20
-		_Gloss2("Gloss2", Range(8.0, 256)) = 20
-		_Shift1("Shift1", float) = 0
-		_Shift2("Shift2", float) = 0
-		_NoiseTex("NoiseTex" , 2D) = "white"{}
+		_Gloss("Gloss", Range(8.0, 256)) = 20
+		_Shift("Shift", Range(-1, 1)) = 0
+		_ShiftTex("ShiftTex" , 2D) = "white"{}
+		_SpecularColor("Specular Color", Color) = (1,1,1,1)
         
     }
     SubShader
