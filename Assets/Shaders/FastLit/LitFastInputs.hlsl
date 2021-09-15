@@ -17,12 +17,12 @@ struct VertexPositionInputs
 
 CBUFFER_START(UnityPerMaterial)
     //ST
-    float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST, _LUT_ST;
+    float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST, _LUT_ST, _NoiseTex_ST;
     
     //color
     float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor;
     
-    float _Cutoff, _SSSThreshold;
+    float _Cutoff, _Gloss1, _Gloss2, _Shift1, _Shift2, _SSSThreshold;
     
     float _Smoothness;
     
@@ -50,10 +50,11 @@ CBUFFER_END
 
 
 //Textures
-    TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
-    TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
-    TEXTURE2D(_MaskMap); SAMPLER(sampler_MaskMap);
-    TEXTURE2D(_LUT);    SAMPLER(sampler_LUT);
+    TEXTURE2D(_BaseMap);    SAMPLER(sampler_BaseMap);
+    TEXTURE2D(_BumpMap);    SAMPLER(sampler_BumpMap);
+    TEXTURE2D(_MaskMap);    SAMPLER(sampler_MaskMap);
+    TEXTURE2D(_LUT);        SAMPLER(sampler_LUT);
+    TEXTURE2D(_NoiseTex);   SAMPLER(sampler_NoiseTex);
     
 struct Attributes
 {
@@ -134,10 +135,10 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.anisotropic = lerp(0, _Anisotropic, baseColorMap.a);
     outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, baseColorMap.a), 0, g);
     
-    //outSurfaceData.metallic = lerp(0, lerp(_Metallic, 0, baseColorMap.a), g);
-    //outSurfaceData.roughness = lerp(_Roughness * r, 1, outSurfaceData.subsurface);
-    outSurfaceData.metallic = _Metallic;
-    outSurfaceData.roughness = _Roughness;
+    outSurfaceData.metallic = lerp(0, lerp(_Metallic, 0, baseColorMap.a), g);
+    outSurfaceData.roughness = lerp(_Roughness * r, 1, outSurfaceData.subsurface);
+    //outSurfaceData.metallic = _Metallic;
+    //outSurfaceData.roughness = _Roughness;
     outSurfaceData.occlusion = lerp(1, maskMap.b, _Occlusion);
     
     float smoothness = 1 - outSurfaceData.roughness * outSurfaceData.roughness;

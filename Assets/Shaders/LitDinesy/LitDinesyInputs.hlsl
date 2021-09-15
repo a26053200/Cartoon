@@ -152,8 +152,7 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
 
     outInputData.positionWS = input.positionWS;
 
-    outInputData.normalWS = TransformTangentToWorld(normalTS,
-            float3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz));
+    outInputData.normalWS = TransformTangentToWorld(normalTS, float3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz));
 
     outInputData.tangentWS = input.tangentWS.xyz;
     outInputData.bitangentWS = input.bitangentWS.xyz;

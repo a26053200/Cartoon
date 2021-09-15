@@ -56,6 +56,14 @@ Shader "FastLit/FastLit"
 		_TransAmbient("Ambient", Range( 0 , 1)) = 0.2
         _TransShadow("TransShadow",Range(0,1)) = 0.5
         
+        [Space]
+        [Header(Anisotropic)][Space]
+        _Gloss1("Gloss1", Range(8.0, 256)) = 20
+		_Gloss2("Gloss2", Range(8.0, 256)) = 20
+		_Shift1("Shift1", float) = 0
+		_Shift2("Shift2", float) = 0
+		_NoiseTex("NoiseTex" , 2D) = "white"{}
+        
     }
     SubShader
     {
@@ -84,6 +92,7 @@ Shader "FastLit/FastLit"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             //#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             // -------------------------------------
             
             #pragma vertex LitDinesyPassVertex
@@ -97,7 +106,7 @@ Shader "FastLit/FastLit"
             ENDHLSL
         }
         
-        //UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
+        UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
     }
     //CustomEditor "URPToon.LitToonShaderGUI"
 }
