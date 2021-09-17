@@ -21,11 +21,11 @@ CBUFFER_START(UnityPerMaterial)
     //color
     float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor;
     
-    float _Cutoff, _Gloss1, _Gloss2, _Shift1, _Shift2, _SSSThreshold;
+    float _Cutoff, _Alpha, _Gloss1, _Gloss2, _Shift1, _Shift2, _SSSThreshold;
     
     float _SubsurfaceRange, _SSSPower, _SSSOffset, _SSSScale;
     
-    float _Smoothness;
+    float _Smoothness,_SSAO;
     
     //float
     float _BumpScale;
@@ -75,27 +75,30 @@ struct Varyings
 
 struct DisneyInputData
 {
-    float3  positionWS;
-    float3  normalWS;
-    float3  tangentWS;
-    float3  bitangentWS;
-    float3  binormalWS;
-    float3  viewDirectionWS;
-    float4  shadowCoord;
-    float   fogCoord;
-    float3  vertexLighting;
-    float3  bakedGI;
+    float3 positionWS;
+    float3 normalWS;
+    float3 tangentWS;
+    float3 bitangentWS;
+    float3 binormalWS;
+    float3 viewDirectionWS;
+    float4 shadowCoord;
+    float  fogCoord;
+    float3 vertexLighting;
+    float3 bakedGI;
+    float2 normalizedScreenSpaceUV;
 };
    
 struct DisneySurfaceData
 {
     float3  albedo;
-    float  emission;
+    float   alpha;
+    float   emission;
     float3  normalTS;
     float   metallic;
     float   roughness;
     float   subsurface;
     float   occlusion;
+    float   specular;
     float3  specularColor;
     float   anisotropic;
     float   anisotropicShift;
@@ -108,6 +111,7 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     float4 baseColorMap = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv);
     outSurfaceData.albedo = baseColorMap.rgb;
     outSurfaceData.emission = baseColorMap.a;
+    outSurfaceData.alpha = _Alpha;
 
     outSurfaceData.normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv));
     
@@ -129,6 +133,7 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.roughness = _Roughness * r;//lerp(_Roughness * r, 1, outSurfaceData.subsurface);
     outSurfaceData.occlusion = lerp(1, b, _Occlusion);
     
+    outSurfaceData.specular = _Specular;
     outSurfaceData.specularColor = _SpecularColor;
 }
 
@@ -154,25 +159,26 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
     outInputData.fogCoord = input.fogFactorAndVertexLight.x;
     outInputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
     outInputData.bakedGI = SAMPLE_GI(input.lightmapUV, input.vertexSH, outInputData.normalWS);
+    outInputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 }
 
-inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,out BRDFData outBRDFData)
+inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,out BRDFData brdfData)
 {
-    outBRDFData = (BRDFData)0;
+    brdfData = (BRDFData)0;
     
     //IBL
     float oneMinusReflectivity = OneMinusReflectivityMetallic(metallic);
     float reflectivity = 1.0 - oneMinusReflectivity;
 
-    outBRDFData.diffuse = albedo * oneMinusReflectivity;
-    outBRDFData.specular = lerp(kDieletricSpec.rgb, albedo, metallic);
+    brdfData.diffuse = albedo * oneMinusReflectivity;
+    brdfData.specular = lerp(kDieletricSpec.rgb, albedo, metallic);
 
-    outBRDFData.grazingTerm = saturate(1 - roughness + reflectivity);
-    outBRDFData.perceptualRoughness = roughness;
-    outBRDFData.roughness = roughness * roughness;
-    outBRDFData.roughness2 = outBRDFData.roughness * outBRDFData.roughness;
-    outBRDFData.normalizationTerm   = outBRDFData.roughness * 4.0h + 2.0h;
-    outBRDFData.roughness2MinusOne  = outBRDFData.roughness2 - 1.0h;
+    brdfData.grazingTerm = saturate(1 - roughness + reflectivity);
+    brdfData.perceptualRoughness = roughness;
+    brdfData.roughness           = max(PerceptualRoughnessToRoughness(brdfData.perceptualRoughness), HALF_MIN_SQRT);
+    brdfData.roughness2 = brdfData.roughness * brdfData.roughness;
+    brdfData.normalizationTerm   = brdfData.roughness * 4.0h + 2.0h;
+    brdfData.roughness2MinusOne  = brdfData.roughness2 - 1.0h;
 }
 
 #endif

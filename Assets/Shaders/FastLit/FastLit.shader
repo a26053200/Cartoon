@@ -9,6 +9,7 @@ Shader "FastLit/FastLit"
         [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
         [MainColor] _BaseColor("Color", Color) = (1,1,1,1)
         _Cutoff("Cutoff", Float) = 1.0
+        _Alpha("Alpha", Range(0,1)) = 1.0
         _BumpScale("Bump Scale", Float) = 1.0
         _BumpMap("Normal Map", 2D) = "bump" {}
         
@@ -19,12 +20,14 @@ Shader "FastLit/FastLit"
         [Space]
         [Header(Base)][Space]
         _Anisotropic("Anisotropic",     Range(0,1)) = 0
-        _Occlusion("Occlusion",       Range(0,1)) = 0.5
+        _Occlusion("Occlusion",       Range(0,2)) = 0.5
+        _SSAO ("SSAO",          Range(0,1)) = 0.0
         
         [Space]
         [Header(Metallic)][Space]
         _Roughness ("Roughness",       Range(0,1)) = 0.5
         _Metallic ("Metallic",          Range(0,1)) = 0.0
+        _Specular ("_Specular",          Range(0,1)) = 0.0
        
         [Space]
         [Header(SSS)][Space]

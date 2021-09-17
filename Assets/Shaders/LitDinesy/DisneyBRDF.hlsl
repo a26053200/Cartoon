@@ -19,6 +19,7 @@ float Pow5(float x)
 {
     return x*x*x*x*x;
 }
+
 float SchlickFresnel(float u)
 {
     float m = clamp(1-u, 0, 1);
@@ -245,13 +246,13 @@ float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData dis
     float3 color = DisneyPBR(disneySurfaceData, mainLight,
                         disneyInputData.normalWS, disneyInputData.viewDirectionWS,
                         disneyInputData.tangentWS, disneyInputData.bitangentWS, disneySurfaceData.reflectColor);
-    //return float4(color,1);
+    return float4(color,1);
     float3 sssColor = SkinTranslucency(mainLight.direction,disneyInputData.normalWS,
                     disneyInputData.viewDirectionWS,disneySurfaceData.albedo,
                     disneySurfaceData.subsurface,mainLight.color,mainLight.shadowAttenuation);
-    color += sssColor;//lerp(sssColor, 0, step(disneySurfaceData.roughness, _SSSThreshold));
+    //color += sssColor;//lerp(sssColor, 0, step(disneySurfaceData.roughness, _SSSThreshold));
     
-    color += GlobalIllumination(brdfData, disneyInputData.bakedGI, disneySurfaceData.occlusion, disneyInputData.normalWS, disneyInputData.viewDirectionWS);
+    //color += GlobalIllumination(brdfData, disneyInputData.bakedGI, disneySurfaceData.occlusion, disneyInputData.normalWS, disneyInputData.viewDirectionWS);
 #ifdef _ADDITIONAL_LIGHTS
     int pixelLightCount = GetAdditionalLightsCount();
     for (int i = 0; i < pixelLightCount; ++i)
