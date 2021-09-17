@@ -17,100 +17,90 @@ inline float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness
     return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+inline half3 DecodeHDR (half4 data, half4 decodeInstructions)
+{
+    // Take into account texture alpha if decodeInstructions.w is true(the alpha value affects the RGB channels)
+    half alpha = decodeInstructions.w * (data.a - 1.0) + 1.0;
 
-float D_GGX_zn(float roughness, float NdotH)
-{
-	float a = roughness * roughness;
-	float NdotH2 = NdotH * NdotH;
-	float a2 = a * a;
-	float d = NdotH2 * (a2 - 1) + 1;//分母
-	return a2 / ( PI * d * d );					// 4 mul, 1 rcp
-}
-//各向异性D项目
-float D_GGXAniso_zn(float TdotH, float BdotH, float mt, float mb, float nh) 
-{
-	float d = TdotH * TdotH / (mt * mt) + BdotH * BdotH / (mb * mb) + nh * nh;
-	return (1.0 / ( UNITY_PI * mt*mb * d*d));
+    // If Linear mode is not supported we can skip exponent part
+    #if defined(UNITY_COLORSPACE_GAMMA)
+        return (decodeInstructions.x * alpha) * data.rgb;
+    #else
+    #   if defined(UNITY_USE_NATIVE_HDR)
+            return decodeInstructions.x * data.rgb; // Multiplier for future HDRI relative to absolute conversion.
+    #   else
+            return (decodeInstructions.x * pow(alpha, decodeInstructions.y)) * data.rgb;
+    #   endif
+    #endif
 }
 
-//G项子项
- float G_Section(float dot,float k)
- {
-     float nom = dot;
-     float denom = lerp(dot,1,k);
-     return nom/denom;
- }
-         
-float G_SchlickGGX(float NdotL, float NdotV, float roughness)
- {
-     float k = pow(1 + roughness, 2)/8;
-     float Gnl = G_Section(NdotL, k);
-     float Gnv = G_Section(NdotV, k);
-     return Gnl * Gnv;
- }
- 
- //F项 直接光
-float3 F_Function(float HdotL,float3 F0)
+float3 FastSubsurfaceScattering(float3 L, float3 N, float3 V, float3 lightCol, float subsurface, float shadowAttenuation)
 {
-    float fresnel = exp2((-5.55473 * HdotL - 6.98316) * HdotL);
-    return lerp(fresnel, 1, F0);
+    float3 H = normalize(L + N * _SSSOffset);
+	float sss = pow(saturate(dot(V, -H)), _SSSPower);
+    return sss * lightCol * subsurface;
 }
 
 float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, float3 X, float3 Y, float3 lightColor)
 {    
-    float NdotL = max(saturate(dot(N, L)), 0.000001);
-    float NdotV = max(saturate(dot(N, V)), 0.000001);
+    float NdotL = max(dot(N,L), 0.000001);
+    float NdotV = max(dot(N,V), 0.000001);
  
     float3 H = SafeNormalize(L + V);
-    float NdotH = max(saturate(dot(N, H)), 0.000001);
-    float LdotH = max(saturate(dot(L, H)), 0.000001);
-    float VdotH = max(saturate(dot(V, H)), 0.000001);
-    float TdotH = max(saturate(dot(X, H)), 0.000001);
-    float BdotH = max(saturate(dot(Y, H)), 0.000001);
+    float NdotH = max(dot(N,H),0.000001);
+    float LdotH = max(dot(L,H),0.000001);
+    float VdotH = max(dot(V,H),0.000001);
     
     float3 albedo = surfaceData.albedo * _BaseColor;
     
     float perceptualRoughness = surfaceData.roughness;
     float metallic = surfaceData.metallic;
-    float3 F0 = lerp(kDielectricSpec.rgb, albedo, metallic);
+    float3 F0 = lerp(unity_ColorSpaceDielectricSpec.rgb, albedo, metallic);
     
-    float D = D_GGX_zn(brdfData.roughness, NdotH);
-    //float D = D_GGXAniso_zn(TdotH, BdotH, 1 - surfaceData.smoothness, 1, NdotH);
-    float F = F_Function(LdotH, F0);
-    float G = G_SchlickGGX(NdotL, NdotV, brdfData.roughness);
+    float lerpSquareRoughness = pow(lerp(0.002, 1, brdfData.roughness), 2);//Unity把roughness lerp到了0.002
+    float D = lerpSquareRoughness / (pow((pow(NdotH, 2) * (lerpSquareRoughness - 1) + 1), 2) * UNITY_PI);
     
-    //Cook-Torrance模型 BRDF
-    float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
+    float3 F = F0 + (1 - F0) * exp2((-5.55473 * VdotH - 6.98316) * VdotH);
+    
+    float kInDirectLight = pow(brdfData.roughness2 + 1, 2) / 8;
+    float kInIBL = pow(brdfData.roughness2, 2) / 8;
+    float GLeft = NdotL / lerp(NdotL, 1, kInDirectLight);
+    float GRight = NdotV / lerp(NdotV, 1, kInDirectLight);
+    float G = GLeft * GRight;
 
+    //Cook-Torrance模型BRDF
+    float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
+    
     //漫反射系数
-    //float3 kd = (1 - F) * (1 - metallic);
+    float3 kd = (1 - F) * (1 - metallic);
+    
+    float d = NdotH * NdotH * (brdfData.roughness2MinusOne - 1.0h) + 1.00001f;
+    float LoH2 = LdotH * LdotH;
+    float specularTerm = brdfData.roughness2MinusOne / ((d * d) * max(0.1h, LoH2) * brdfData.normalizationTerm);
+    float3 SpecularResult1 = surfaceData.specularColor * specularTerm;
     
     //直接光照部分结果
-    float3 specColor = SpecularResult * lightColor * NdotL * PI * surfaceData.specular;
-    float3 diffColor = brdfData.diffuse * lightColor * NdotL * surfaceData.diffuse;
+    float3 specColor = SpecularResult1 * lightColor * NdotL * UNITY_PI;
+    float3 diffColor = kd * albedo * lightColor * NdotL;
     float3 DirectLightResult = diffColor + specColor;
- 
- #ifdef _UseAnisotropic    
+     
     // Anisotropic
     float shift = surfaceData.anisotropicShift;
-    float3 aB = normalize(Y + shift * N); //worldBinormal
-    float aBdotH = dot(aB, H);
-    float sinTH = sqrt(1.0 - aBdotH * aBdotH);
-    float dirAtten = smoothstep(-1, 0, aBdotH);
+    float3 B = normalize(Y + shift * N); //worldBinormal
+    float TdotH = dot(B, H);
+    float sinTH = sqrt(1.0 - TdotH * TdotH);
+    float dirAtten = smoothstep(-1, 0, TdotH);
     float anisotropic = dirAtten * pow(sinTH, surfaceData.anisotropicGloss);
     
-    float3 AnisotropicResult = anisotropic * surfaceData.anisotropicStrength * lightColor * saturate(NdotL * 2);
-    DirectLightResult += lerp(0, AnisotropicResult, surfaceData.anisotropic);
-    //return lerp(0, AnisotropicResult, surfaceData.anisotropic);
-  #endif
-    
-    return DirectLightResult;
+    float3 AnisotropicResult = anisotropic * surfaceData.specularColor * lightColor * surfaceData.albedo * saturate(NdotL * 2);
+    //return lerp(0, anisotropicResult, surfaceData.anisotropic);
+    return DirectLightResult + lerp(0, AnisotropicResult, surfaceData.anisotropic);
 }
 
 float3 FastPBR(BRDFData brdfData, DisneySurfaceData surfaceData, Light light, DisneyInputData disneyInputData)
 {
     //return float4(light.color,1);
-    return FastBRDF(
+    return light.color * light.distanceAttenuation * 1 * FastBRDF(
             brdfData, 
             surfaceData, light.direction, 
             disneyInputData.viewDirectionWS, 
@@ -120,14 +110,6 @@ float3 FastPBR(BRDFData brdfData, DisneySurfaceData surfaceData, Light light, Di
             light.color);
 }
 
-
-float3 FastSubsurfaceScattering(float3 L, float3 N, float3 V, float3 lightCol, float subsurface, float shadowAttenuation)
-{
-    float3 H = SafeNormalize(L + N * _SSSOffset);
-	float sss = pow(saturate(dot(V, -H)), _SSSPower);
-    return sss * lightCol * subsurface * _SSSColor;
-}
-
 float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData disneySurfaceData)
 {
     BRDFData brdfData;
@@ -135,11 +117,20 @@ float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData dis
     
     Light mainLight = GetMainLight(disneyInputData.shadowCoord);
     MixRealtimeAndBakedGI(mainLight, disneyInputData.normalWS, disneyInputData.bakedGI);
-    
+    /*
+    AmbientOcclusionFactor aoFactor = GetScreenSpaceAmbientOcclusion(disneyInputData.normalizedScreenSpaceUV);
+    float ssao = lerp(1, aoFactor.directAmbientOcclusion, _SSAO);
+    mainLight.color *= ssao;
+    disneyInputData.bakedGI *= lerp(1, aoFactor.indirectAmbientOcclusion, _SSAO);
+    */
     float3 color = FastPBR(brdfData, disneySurfaceData, mainLight, disneyInputData);
     //return float4(color,1);
-    
-#ifdef _UseSSS
+    /*
+    float3 sssColor = SkinTranslucency(mainLight.direction,disneyInputData.normalWS,
+                    disneyInputData.viewDirectionWS,disneySurfaceData.albedo,
+                    disneySurfaceData.subsurface,mainLight.color,mainLight.shadowAttenuation);
+                    */
+    /*
     float3 sssColor =  FastSubsurfaceScattering(
                 mainLight.direction,
                 disneyInputData.normalWS,
@@ -149,8 +140,8 @@ float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData dis
                 mainLight.shadowAttenuation
                 );            
     color += sssColor;//lerp(sssColor, 0, step(disneySurfaceData.roughness, _SSSThreshold));
-    //return float4(sssColor,1);
-#endif  
+    return float4(sssColor,1);
+    */
     
     float3 iblColor = GlobalIllumination(brdfData, disneyInputData.bakedGI, disneySurfaceData.occlusion, disneyInputData.normalWS, disneyInputData.viewDirectionWS);
     //return float4(iblColor,1);
@@ -166,7 +157,7 @@ float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData dis
 #endif
 
 #ifdef _ADDITIONAL_LIGHTS_VERTEX
-    //color += disneyInputData.vertexLighting * brdfData.diffuse;
+    color += disneyInputData.vertexLighting * brdfData.diffuse;
 #endif
 
     //color += disneySurfaceData.emission * _EmissionColor;

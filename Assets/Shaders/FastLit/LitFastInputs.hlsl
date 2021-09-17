@@ -19,21 +19,18 @@ CBUFFER_START(UnityPerMaterial)
     //ST
     float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST, _LUT_ST, _NoiseTex_ST;
     //color
-    float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor, _SSSColor;
+    float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor;
     
-    float _Cutoff, _Alpha;
+    float _Cutoff, _Alpha, _Gloss1, _Gloss2, _Shift1, _Shift2, _SSSThreshold;
     
     float _SubsurfaceRange, _SSSPower, _SSSOffset, _SSSScale;
     
     float _Smoothness,_SSAO;
     
-    float _AnisotropicStrength, _Gloss, _Shift;
-    
     //float
     float _BumpScale;
     float _Roughness;
     float _Metallic;
-    float _Diffuse;
     float _Specular;
     float _Occlusion;
     float _Subsurface;
@@ -99,16 +96,13 @@ struct DisneySurfaceData
     float3  normalTS;
     float   metallic;
     float   roughness;
-    float   smoothness;
     float   subsurface;
     float   occlusion;
     float   specular;
-    float   diffuse;
     float3  specularColor;
     float   anisotropic;
     float   anisotropicShift;
     float   anisotropicGloss;
-    float   anisotropicStrength;
 };
 
 void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData)
@@ -125,7 +119,6 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     float4 noiseTex = SAMPLE_TEXTURE2D(_ShiftTex,sampler_ShiftTex,uv);
     //float4 maskMap2 = SAMPLE_TEXTURE2D(_MaskMap2,sampler_MaskMap2,uv);
 
-    // HLW2 标准
     half r = maskMap.r;
     half g = maskMap.g;
     half b = maskMap.b;
@@ -133,33 +126,14 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     
     outSurfaceData.anisotropic = lerp(0, _Anisotropic, a);
     outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
-    outSurfaceData.anisotropicShift = noiseTex.r - _Shift;
-    outSurfaceData.anisotropicGloss = _Gloss;
-    outSurfaceData.anisotropicStrength = _AnisotropicStrength;
-    
-    outSurfaceData.smoothness = lerp(0, 1 - r, _Smoothness);
-    outSurfaceData.roughness = 1 - outSurfaceData.smoothness;
-    outSurfaceData.metallic = lerp(0, g, step(outSurfaceData.anisotropic, 0) * _Metallic);
-    outSurfaceData.occlusion = lerp(1, b, _Occlusion);
-    
-    /* Lit 标准
-    half r = maskMap.a;
-    half g = maskMap.r;
-    half b = maskMap.g;
-    half a = 1;//maskMap.a;
-    
-    outSurfaceData.anisotropic = lerp(0, _Anisotropic, a);
-    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
     outSurfaceData.anisotropicShift = noiseTex.r - _Shift2;
     outSurfaceData.anisotropicGloss = _Gloss2;
     
-    outSurfaceData.smoothness = lerp(0, r, _Smoothness);
-    outSurfaceData.metallic = lerp(0, g, _Metallic);
-    outSurfaceData.roughness = 1 - outSurfaceData.smoothness;//lerp(_Roughness * r, 1, outSurfaceData.subsurface);
+    outSurfaceData.metallic = lerp(0, lerp(_Metallic, 0, a), g);
+    outSurfaceData.roughness = _Roughness * r;//lerp(_Roughness * r, 1, outSurfaceData.subsurface);
     outSurfaceData.occlusion = lerp(1, b, _Occlusion);
-    */
+    
     outSurfaceData.specular = _Specular;
-    outSurfaceData.diffuse = _Diffuse;
     outSurfaceData.specularColor = _SpecularColor;
 }
 
@@ -179,7 +153,7 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
     outInputData.normalWS = NormalizeNormalPerPixel(outInputData.normalWS);
     outInputData.binormalWS = cross(outInputData.normalWS,outInputData.tangentWS);
     outInputData.viewDirectionWS = float3(input.normalWS.w, input.tangentWS.w, input.bitangentWS.w);
-    
+
     outInputData.shadowCoord = input.shadowCoord;
 
     outInputData.fogCoord = input.fogFactorAndVertexLight.x;
@@ -200,9 +174,9 @@ inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,ou
     brdfData.specular = lerp(kDieletricSpec.rgb, albedo, metallic);
 
     brdfData.grazingTerm = saturate(1 - roughness + reflectivity);
-    brdfData.perceptualRoughness = max(PerceptualRoughnessToRoughness(brdfData.perceptualRoughness), HALF_MIN_SQRT);
-    brdfData.roughness           = roughness * roughness;
-    brdfData.roughness2          = brdfData.roughness * brdfData.roughness;
+    brdfData.perceptualRoughness = roughness;
+    brdfData.roughness           = max(PerceptualRoughnessToRoughness(brdfData.perceptualRoughness), HALF_MIN_SQRT);
+    brdfData.roughness2 = brdfData.roughness * brdfData.roughness;
     brdfData.normalizationTerm   = brdfData.roughness * 4.0h + 2.0h;
     brdfData.roughness2MinusOne  = brdfData.roughness2 - 1.0h;
 }
