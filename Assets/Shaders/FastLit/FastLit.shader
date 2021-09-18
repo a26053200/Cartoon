@@ -24,11 +24,13 @@ Shader "FastLit/FastLit"
         
         [Space]
         [Header(PBR)][Space]
-        _Diffuse ("Diffuse",          Range(0,1)) = 1
-        _Specular ("Specular",          Range(0,1)) = 1
-        _Smoothness ("Smoothness",       Range(0,1)) = 0.5
-        //_Roughness ("Roughness",       Range(0,1)) = 0.5
+        _Diffuse ("Diffuse",            Range(0,2)) = 1
+        _Specular ("Specular",          Range(0,2)) = 1
+        _Smoothness ("Smoothness",      Range(0,1)) = 0.5
+        //_Roughness ("Roughness",      Range(0,1)) = 0.5
         _Metallic ("Metallic",          Range(0,1)) = 0.0
+        [Space]
+        _Sheen ("Sheen",                Range(0,1)) = 1
        
         [Space]
         [Toggle(Use SSS)]_UseSSS("Use SSS", Float) = 0

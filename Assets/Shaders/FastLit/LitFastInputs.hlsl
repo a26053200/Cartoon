@@ -38,6 +38,7 @@ CBUFFER_START(UnityPerMaterial)
     float _Occlusion;
     float _Subsurface;
     float _Anisotropic;
+    float _Sheen;
 CBUFFER_END
 
 
@@ -109,6 +110,7 @@ struct DisneySurfaceData
     float   anisotropicShift;
     float   anisotropicGloss;
     float   anisotropicStrength;
+    float   sheen;
 };
 
 void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData)
@@ -161,6 +163,7 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.specular = _Specular;
     outSurfaceData.diffuse = _Diffuse;
     outSurfaceData.specularColor = _SpecularColor;
+    outSurfaceData.sheen = _Sheen;
 }
 
 
@@ -170,8 +173,7 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
 
     outInputData.positionWS = input.positionWS;
 
-    outInputData.normalWS = TransformTangentToWorld(normalTS,
-            float3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz));
+    outInputData.normalWS = TransformTangentToWorld(normalTS, float3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz));
 
     outInputData.tangentWS = input.tangentWS.xyz;
     outInputData.bitangentWS = input.bitangentWS.xyz;
@@ -188,7 +190,7 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
     outInputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 }
 
-inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,out BRDFData brdfData)
+inline void InitializeBRDFData(float3 albedo, float metallic, float smoothness,out BRDFData brdfData)
 {
     brdfData = (BRDFData)0;
     
@@ -199,9 +201,9 @@ inline void InitializeBRDFData(float3 albedo, float metallic, float roughness,ou
     brdfData.diffuse = albedo * oneMinusReflectivity;
     brdfData.specular = lerp(kDieletricSpec.rgb, albedo, metallic);
 
-    brdfData.grazingTerm = saturate(1 - roughness + reflectivity);
-    brdfData.perceptualRoughness = max(PerceptualRoughnessToRoughness(brdfData.perceptualRoughness), HALF_MIN_SQRT);
-    brdfData.roughness           = roughness * roughness;
+    brdfData.grazingTerm         = saturate(smoothness + reflectivity);
+    brdfData.perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(smoothness);
+    brdfData.roughness           = PerceptualRoughnessToRoughness(brdfData.perceptualRoughness);
     brdfData.roughness2          = brdfData.roughness * brdfData.roughness;
     brdfData.normalizationTerm   = brdfData.roughness * 4.0h + 2.0h;
     brdfData.roughness2MinusOne  = brdfData.roughness2 - 1.0h;

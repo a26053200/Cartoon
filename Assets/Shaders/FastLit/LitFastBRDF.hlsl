@@ -4,8 +4,7 @@
 #include "LitFastInputs.hlsl"
 #include "Unreal4BRDF.hlsl"
 
-#define UNITY_PI 3.14159265358979323846
-#define UNITY_INV_PI 0.31830988618f
+#define UNITY_INV_PI        0.31830988618f
 // Linear values
 #define unity_ColorSpaceGrey fixed4(0.214041144, 0.214041144, 0.214041144, 0.5)
 #define unity_ColorSpaceDouble fixed4(4.59479380, 4.59479380, 4.59479380, 2.0)
@@ -17,6 +16,12 @@ inline float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness
     return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+inline float GGXTerm (float NdotH, float roughness)
+{
+    float a2 = roughness * roughness;
+    float d = (NdotH * a2 - NdotH) * NdotH + 1.0f; // 2 mad
+    return UNITY_INV_PI * a2 / (d * d + 1e-7f); // This function is not intended to be running on Mobile,
+}
 
 float D_GGX_zn(float roughness, float NdotH)
 {
@@ -30,7 +35,7 @@ float D_GGX_zn(float roughness, float NdotH)
 float D_GGXAniso_zn(float TdotH, float BdotH, float mt, float mb, float nh) 
 {
 	float d = TdotH * TdotH / (mt * mt) + BdotH * BdotH / (mb * mb) + nh * nh;
-	return (1.0 / ( UNITY_PI * mt*mb * d*d));
+	return (1.0 / ( PI * mt*mb * d*d));
 }
 
 //G项子项
@@ -56,12 +61,17 @@ float3 F_Function(float HdotL,float3 F0)
     return lerp(fresnel, 1, F0);
 }
 
+inline half3 FresnelTerm (half3 F0, half cosA)
+{
+    half t = Pow5 (1 - cosA);   // ala Schlick interpoliation
+    return F0 + (1-F0) * t;
+}
+
 float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, float3 X, float3 Y, float3 lightColor)
 {    
+    float3 H = SafeNormalize(L + V);
     float NdotL = max(saturate(dot(N, L)), 0.000001);
     float NdotV = max(saturate(dot(N, V)), 0.000001);
- 
-    float3 H = SafeNormalize(L + V);
     float NdotH = max(saturate(dot(N, H)), 0.000001);
     float LdotH = max(saturate(dot(L, H)), 0.000001);
     float VdotH = max(saturate(dot(V, H)), 0.000001);
@@ -74,14 +84,24 @@ float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, floa
     float metallic = surfaceData.metallic;
     float3 F0 = lerp(kDielectricSpec.rgb, albedo, metallic);
     
-    float D = D_GGX_zn(brdfData.roughness, NdotH);
+    //float D = D_GGX_zn(brdfData.roughness, NdotH);
+    float D = GGXTerm (NdotH, brdfData.roughness);
     //float D = D_GGXAniso_zn(TdotH, BdotH, 1 - surfaceData.smoothness, 1, NdotH);
-    float F = F_Function(LdotH, F0);
+    //float F = F_Function(LdotH, F0);
+    float F = FresnelTerm(F0, LdotH);
     float G = G_SchlickGGX(NdotL, NdotV, brdfData.roughness);
     
     //Cook-Torrance模型 BRDF
-    float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
+    //float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
 
+    float d = NdotH * NdotH * brdfData.roughness2MinusOne + 1.00001f;
+    half LoH2 = LdotH * LdotH;
+    half SpecularResult = brdfData.roughness2 / ((d * d) * max(0.1h, LoH2) * brdfData.normalizationTerm);
+    
+#if defined (SHADER_API_MOBILE) || defined (SHADER_API_SWITCH)
+    SpecularResult = SpecularResult - HALF_MIN;
+    SpecularResult = clamp(SpecularResult, 0.0, 100.0); // Prevent FP16 overflow on mobiles
+#endif
     //漫反射系数
     //float3 kd = (1 - F) * (1 - metallic);
     
@@ -131,7 +151,7 @@ float3 FastSubsurfaceScattering(float3 L, float3 N, float3 V, float3 lightCol, f
 float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData disneySurfaceData)
 {
     BRDFData brdfData;
-    InitializeBRDFData(disneySurfaceData.albedo, disneySurfaceData.metallic, disneySurfaceData.roughness, brdfData);
+    InitializeBRDFData(disneySurfaceData.albedo, disneySurfaceData.metallic, disneySurfaceData.smoothness, brdfData);
     
     Light mainLight = GetMainLight(disneyInputData.shadowCoord);
     MixRealtimeAndBakedGI(mainLight, disneyInputData.normalWS, disneyInputData.bakedGI);
@@ -154,7 +174,7 @@ float4 DisneyBRDFFragment(DisneyInputData disneyInputData, DisneySurfaceData dis
     
     float3 iblColor = GlobalIllumination(brdfData, disneyInputData.bakedGI, disneySurfaceData.occlusion, disneyInputData.normalWS, disneyInputData.viewDirectionWS);
     //return float4(iblColor,1);
-    color += iblColor;
+    color += lerp(0, iblColor, disneySurfaceData.sheen);
 #ifdef _ADDITIONAL_LIGHTS
     int pixelLightCount = GetAdditionalLightsCount();
     for (int i = 0; i < pixelLightCount; ++i)
