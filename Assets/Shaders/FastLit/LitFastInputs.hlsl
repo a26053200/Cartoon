@@ -27,7 +27,7 @@ CBUFFER_START(UnityPerMaterial)
     
     float _Smoothness,_SSAO;
     
-    float _AnisotropicStrength, _Gloss, _Shift;
+    float _Gloss, _Shift;
     
     //float
     float _BumpScale;
@@ -39,6 +39,10 @@ CBUFFER_START(UnityPerMaterial)
     float _Subsurface;
     float _Anisotropic;
     float _Sheen;
+    
+    float   _RimStrength;
+    float   _RimFresnelMask;
+    float3  _RimColor;
 CBUFFER_END
 
 
@@ -98,19 +102,25 @@ struct DisneySurfaceData
     float   alpha;
     float   emission;
     float3  normalTS;
+    
     float   metallic;
-    float   roughness;
     float   smoothness;
+    float   roughness;
     float   subsurface;
     float   occlusion;
+    
     float   specular;
     float   diffuse;
-    float3  specularColor;
+    float   sheen;
+    
     float   anisotropic;
     float   anisotropicShift;
     float   anisotropicGloss;
-    float   anisotropicStrength;
-    float   sheen;
+    
+    float   rimStrength;
+    float   rimFresnelMask;
+    float3  rimColor;
+    
 };
 
 void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData)
@@ -133,16 +143,17 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     half b = maskMap.b;
     half a = baseColorMap.a;
     
-    outSurfaceData.anisotropic = lerp(0, _Anisotropic, a);
-    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
-    outSurfaceData.anisotropicShift = noiseTex.r - _Shift;
-    outSurfaceData.anisotropicGloss = _Gloss;
-    outSurfaceData.anisotropicStrength = _AnisotropicStrength;
+    half s = 1 - r;
+    outSurfaceData.smoothness   = lerp(s * _Smoothness, _Smoothness, step(s, 1));
+    outSurfaceData.roughness    = 1 - outSurfaceData.smoothness;
+    outSurfaceData.metallic     = lerp(0, g, _Metallic);
+    outSurfaceData.occlusion    = lerp(1, b, _Occlusion);
     
-    outSurfaceData.smoothness = lerp(0, 1 - r, _Smoothness);
-    outSurfaceData.roughness = 1 - outSurfaceData.smoothness;
-    outSurfaceData.metallic = lerp(0, g, step(outSurfaceData.anisotropic, 0) * _Metallic);
-    outSurfaceData.occlusion = lerp(1, b, _Occlusion);
+    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
+    
+    outSurfaceData.anisotropic          = lerp(0, _Anisotropic, a);
+    outSurfaceData.anisotropicShift     = noiseTex.r - _Shift;
+    outSurfaceData.anisotropicGloss     = _Gloss;
     
     /* Lit 标准
     half r = maskMap.a;
@@ -162,8 +173,11 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     */
     outSurfaceData.specular = _Specular;
     outSurfaceData.diffuse = _Diffuse;
-    outSurfaceData.specularColor = _SpecularColor;
     outSurfaceData.sheen = _Sheen;
+    
+    outSurfaceData.rimColor = _RimColor;
+    outSurfaceData.rimStrength = _RimStrength;
+    outSurfaceData.rimFresnelMask = _RimFresnelMask;
 }
 
 
@@ -198,9 +212,8 @@ inline void InitializeBRDFData(float3 albedo, float metallic, float smoothness,o
     float oneMinusReflectivity = OneMinusReflectivityMetallic(metallic);
     float reflectivity = 1.0 - oneMinusReflectivity;
 
-    brdfData.diffuse = albedo * oneMinusReflectivity;
-    brdfData.specular = lerp(kDieletricSpec.rgb, albedo, metallic);
-
+    brdfData.diffuse             = albedo * oneMinusReflectivity;
+    brdfData.specular            = lerp(kDieletricSpec.rgb, albedo, metallic);
     brdfData.grazingTerm         = saturate(smoothness + reflectivity);
     brdfData.perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(smoothness);
     brdfData.roughness           = PerceptualRoughnessToRoughness(brdfData.perceptualRoughness);

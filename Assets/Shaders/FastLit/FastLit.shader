@@ -8,31 +8,35 @@ Shader "FastLit/FastLit"
     {
         [MainColor] _BaseColor("Color", Color) = (1,1,1,1)
         [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
-        
-        //_BumpScale("Bump Scale", Range(0,2)) = 1.0
         _BumpMap("Normal Map", 2D) = "bump" {}
-        //_LUT("LUT", 2D) = "white" {}
         _MaskMap("Mask Map", 2D) = "white" {}
         
-        [Space]
-        [Header(Base)][Space]
-        _Cutoff("Cutoff", Float) = 1.0
-        _Alpha("Alpha", Range(0,1)) = 1.0
-        _Anisotropic("Anisotropic",     Range(0,1)) = 0
-        _Occlusion("Occlusion",       Range(0,2)) = 0.5
-        //_SSAO ("SSAO",          Range(0,1)) = 0.0
+        //[Space]
+        //[Header(Cutoff)][Space]
+        [Toggle(Use Cutoff)]_UseCutoff("Use Cutoff", Float) = 0
+        _Cutoff("Cutoff", Range(0,1)) = 0.5
         
-        [Space]
-        [Header(PBR)][Space]
+        //[Space]
+        //[Header(Alpha)][Space]
+        [Toggle(Use Alpha)]_UseAlpha("Use Alpha", Float) = 0
+        _Alpha("Alpha", Range(0,1)) = 1.0
+        
+        //[Space]
+        //[Header(Advanced)][Space]
+        [Toggle(Enable Advanced)]_EnableAdvanced("Use Advanced", Float) = 0
         _Diffuse ("Diffuse",            Range(0,2)) = 1
         _Specular ("Specular",          Range(0,2)) = 1
-        _Smoothness ("Smoothness",      Range(0,1)) = 0.5
-        //_Roughness ("Roughness",      Range(0,1)) = 0.5
-        _Metallic ("Metallic",          Range(0,1)) = 0.0
-        [Space]
         _Sheen ("Sheen",                Range(0,1)) = 1
+        //_SSAO ("SSAO",          Range(0,1)) = 0.0
+        
+        //[Space]
+        //[Header(PBR)][Space]
+        [Toggle(Receive Shadow)]_ReceiveShadow("Receive Shadow", Float) = 0
+        _Occlusion("Occlusion",       Range(0,2)) = 1
+        _Metallic ("Metallic",          Range(0,1)) = 0.0
+        _Smoothness ("Smoothness",      Range(0,1)) = 0.5
        
-        [Space]
+        //[Space]
         [Toggle(Use SSS)]_UseSSS("Use SSS", Float) = 0
         _Subsurface("Subsurface",       Range(0,1)) = 0.5
         _SubsurfaceRange("Subsurface Range",       Range(0,2)) = 0.5
@@ -40,14 +44,18 @@ Shader "FastLit/FastLit"
         _SSSOffset("Scaterring Offset",       Range(0,1)) = 0.5
         _SSSColor("SSS Color",       Color) = (1,1,1,1)
         
-        [Space]
+        //[Space]
         [Toggle(Use Anisotropic)]_UseAnisotropic("Use Anisotropic", Float) = 0
-        _AnisotropicStrength("Strength", Range(0, 1)) = 0
+        _Anisotropic("Anisotropic",     Range(0,1)) = 0
 		_Gloss("Gloss", Range(8.0, 256)) = 20
 		_Shift("Shift", Range(-1, 1)) = 0
 		_ShiftTex("ShiftTex" , 2D) = "white"{}
 		//_SpecularColor("Specular Color", Color) = (1,1,1,1)
         
+        [Toggle(Use Rim Light)]_UseRimLight("Use Rim Light", Float) = 0
+        _RimColor ("Rim Color", Color) = (1, 1, 1, 1)
+        _RimStrength("Rim Strength", Range(0, 2)) = 1
+        _RimFresnelMask("Rim Fresnel Mask", Range(0, 1)) = 1
     }
     SubShader
     {
@@ -78,8 +86,14 @@ Shader "FastLit/FastLit"
             //#pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             // -------------------------------------
-            //#pragma shader_feature_local_fragment _UseSSS
-            //#pragma shader_feature_local_fragment _UseAnisotropic
+            
+            #pragma shader_feature_local_fragment _ReceiveShadow
+            #pragma shader_feature_local_fragment _UseCutoff
+            #pragma shader_feature_local_fragment _UseAlpha
+            #pragma shader_feature_local_fragment _EnableAdvanced
+            #pragma shader_feature_local_fragment _UseSSS
+            #pragma shader_feature_local_fragment _UseAnisotropic
+            #pragma shader_feature_local_fragment _UseRimLight
          
             #define _UseSSS
             #define _UseAnisotropic
@@ -97,5 +111,5 @@ Shader "FastLit/FastLit"
         
         UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
     }
-    //CustomEditor "URPToon.LitToonShaderGUI"
+    CustomEditor "URPToon.FastLitShaderGUI"
 }

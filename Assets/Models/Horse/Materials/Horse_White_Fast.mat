@@ -9,7 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Horse_White_Fast
   m_Shader: {fileID: 4800000, guid: 072929711abb44ee88dfb08a1e7c1de8, type: 3}
-  m_ShaderKeywords: _METALLICSPECGLOSSMAP _NORMALMAP
+  m_ShaderKeywords: Advanced Cutoff Enable Light Receive Rim Shadow Use Use Rim Light
+    _EnableAdvanced _METALLICSPECGLOSSMAP _NORMALMAP _ReceiveShadow _UseCutoff _UseRimLight
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -96,6 +97,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _Alpha: 1
     - _AlphaClip: 0
     - _Anisotropic: 0
     - _Blend: 0
@@ -105,10 +107,12 @@ Material:
     - _Clearcoat: 1
     - _ClearcoatGloss: 1
     - _Cull: 2
-    - _Cutoff: 0.29
+    - _Cutoff: 0.41
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _Diffuse: 1
     - _DstBlend: 0
+    - _EnableAdvanced: 1
     - _EnvironmentReflections: 1
     - _Gloss: 256
     - _Gloss1: 20
@@ -116,25 +120,28 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _Metallic: 1
+    - _Metallic: 0
     - _Occlusion: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
+    - _ReceiveShadow: 1
     - _ReceiveShadows: 1
+    - _RimFresnelMask: 1
+    - _RimStrength: 1
     - _Roughness: 0.597
     - _SSSOffset: 0.314
     - _SSSPower: 39.4
     - _ShadowArea: 0.5
     - _ShadowSmooth: 0.5
-    - _Sheen: 0
+    - _Sheen: 1
     - _SheenTint: 1
     - _Shift: 1
     - _Shift1: 0
     - _Shift2: 0
-    - _Smoothness: 0.66
+    - _Smoothness: 0.489
     - _SmoothnessTextureChannel: 0
-    - _Specular: 0
+    - _Specular: 1
     - _SpecularBlend: 1
     - _SpecularHighlights: 1
     - _SpecularSmooth: 0.5
@@ -151,6 +158,11 @@ Material:
     - _TransScattering: 1
     - _TransShadow: 0.5
     - _Translucency: 1
+    - _UseAlpha: 0
+    - _UseAnisotropic: 0
+    - _UseCutoff: 1
+    - _UseRimLight: 1
+    - _UseSSS: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
@@ -158,6 +170,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SSSColor: {r: 1, g: 1, b: 1, a: 1}
     - _SheenColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}

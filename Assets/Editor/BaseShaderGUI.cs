@@ -23,7 +23,7 @@ namespace URPToon
             
             SetDefaultGUIWidths();
 
-            OnVertexColor(materialEditor, properties);
+            //OnVertexColor(materialEditor, properties);
             
             if (_showVertexColor)
             {
@@ -87,12 +87,24 @@ namespace URPToon
             }
             SetFoldoutState(_materialEditor, label, foldoutFlag, foldout);
             EditorGUILayout.EndFoldoutHeaderGroup();
-            
+        }
+        
+        protected void DrawKeywords(string label, ref bool foldoutFlag, DrawPropertiesFun fun)
+        {
+            if (!drawEnable) return;
+            var foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldoutFlag, label);
+            if (foldout)
+            {
+                fun();
+                EditorGUILayout.Space();
+            }
+            SetFoldoutState(_materialEditor, label, foldoutFlag, foldout);
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
         
         protected void DrawTextureProperty(MaterialProperty materialProperty, string label = null, bool scaleOffset = true)
         {
-            if (!drawEnable) return;
+            if (!drawEnable || materialProperty == null) return;
             EditorGUI.BeginChangeCheck();
             var newTexture = _materialEditor.TextureProperty(materialProperty, label ?? materialProperty.displayName, scaleOffset);
             if (EditorGUI.EndChangeCheck())
@@ -101,19 +113,19 @@ namespace URPToon
         
         protected void DrawTextureSingleLineProperty(MaterialProperty materialProperty, MaterialProperty materialProperty2, string label = null)
         {
-            if (!drawEnable) return;
+            if (!drawEnable || materialProperty == null) return;
             _materialEditor.TexturePropertySingleLine(new GUIContent(label ?? materialProperty.displayName), materialProperty, materialProperty2);
         }
         
         protected void DrawTextureSingleLineProperty(MaterialProperty materialProperty, string label)
         {
-            if (!drawEnable) return;
+            if (!drawEnable || materialProperty == null) return;
             _materialEditor.TexturePropertySingleLine(new GUIContent(label ?? materialProperty.displayName), materialProperty);
         }
         
         protected void DrawFloat( MaterialProperty materialProperty, string label = null)
         {
-            if (!drawEnable) return;
+            if (!drawEnable || materialProperty == null) return;
             EditorGUI.BeginChangeCheck();
             var newFloatValue = _materialEditor.FloatProperty(materialProperty, label ?? materialProperty.displayName);
             if (EditorGUI.EndChangeCheck())
@@ -122,7 +134,7 @@ namespace URPToon
 
         protected void DrawColorProperty(MaterialProperty materialProperty, string label = null)
         {
-            if (!drawEnable) return;
+            if (!drawEnable || materialProperty == null) return;
             EditorGUI.BeginChangeCheck();
             var newColor = _materialEditor.ColorProperty(materialProperty, label ?? materialProperty.displayName);
             if (EditorGUI.EndChangeCheck())
@@ -131,7 +143,7 @@ namespace URPToon
 
         protected void DrawSliderProperty(MaterialProperty materialProperty, string label = null)
         {
-            if (!drawEnable) return;
+            if (!drawEnable || materialProperty == null) return;
             EditorGUI.BeginChangeCheck();
             var newValue = _materialEditor.RangeProperty(materialProperty, label ?? materialProperty.displayName);
             if (EditorGUI.EndChangeCheck())
@@ -140,6 +152,7 @@ namespace URPToon
         
         protected bool DrawKeyword(string keyword, MaterialProperty materialProperty, string label = null)
         {
+            if (!drawEnable || materialProperty == null) return false;
             EditorGUI.BeginChangeCheck();
             _materialEditor.ShaderProperty(materialProperty, label ?? materialProperty.displayName);
             bool enable = _material.GetFloat(materialProperty.name) == 1.0;
@@ -148,15 +161,17 @@ namespace URPToon
             return enable;
         }
         
-        protected void BeginKeyWordGroup(string keyword, MaterialProperty materialProperty)
+        protected Boolean BeginKeyWordGroup(string keyword, MaterialProperty materialProperty)
         {
-            EditorGUILayout.Space();
+            if (materialProperty == null) return false;
+            //EditorGUILayout.Space();
             drawEnable = DrawKeyword(keyword, materialProperty);
             if (drawEnable)
             {
                 drawEnable = true;
                 EditorGUI.indentLevel += 1;
             }
+            return drawEnable;
         }
         
         protected void EndKeyWordGroup()
