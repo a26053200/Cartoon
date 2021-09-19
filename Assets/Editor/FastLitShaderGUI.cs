@@ -22,6 +22,7 @@ namespace URPToon
         
         private struct Keywords
         {
+            public static readonly string _UseFade = "_UseFade";
             public static readonly string _UseCutoff = "_UseCutoff";
             public static readonly string _UseAlpha = "_UseAlpha";
             public static readonly string _ReceiveShadow = "_ReceiveShadow";
@@ -38,6 +39,9 @@ namespace URPToon
             public static readonly string BaseColor = "_BaseColor";
             public static readonly string MaskMap = "_MaskMap";
             public static readonly string BumpMap = "_BumpMap";
+            
+            //Cutoff
+            public static readonly string Fade = "_Fade";
             
             //Cutoff
             public static readonly string Cutoff = "_Cutoff";
@@ -96,6 +100,10 @@ namespace URPToon
         private MaterialProperty _bumpMapProp;
         private MaterialProperty _baseColorProp;
         
+        // Fade
+        private MaterialProperty _useFadeProp;
+        private MaterialProperty _fadeProp;
+        
         // Cutoff
         private MaterialProperty _useCutoffProp;
         private MaterialProperty _cutoffProp;
@@ -148,11 +156,15 @@ namespace URPToon
             _rimFoldout = GetFoldoutState(materialEditor, Styles.RimFold.text);
             _outlineFoldout = GetFoldoutState(materialEditor, Styles.OutlineFold.text);
             
-            //Base
+            // Base
             _baseMapProp = FindProperty(PropertyNames.BaseMap, properties, false);
             _maskMapProp = FindProperty(PropertyNames.MaskMap, properties, false);
             _bumpMapProp = FindProperty(PropertyNames.BumpMap, properties, false);
             _baseColorProp = FindProperty(PropertyNames.BaseColor, properties, false);
+            
+            // Fade
+            _useFadeProp = FindProperty(Keywords._UseFade, properties, false);
+            _fadeProp = FindProperty(PropertyNames.Fade, properties, false);
             
             //Cutoff
             _useCutoffProp = FindProperty(Keywords._UseCutoff, properties, false);
@@ -206,16 +218,25 @@ namespace URPToon
         {
             //DrawFoldout(Styles.BaseFold.text, ref _baseFoldOut, DrawBaseProperties);
             DrawBaseProperties();
-            DrawFoldout(Styles.PBRFold.text, ref _pbrFoldout, DrawPBRProperties);
+            //DrawFoldout(Styles.PBRFold.text, ref _pbrFoldout, DrawPBRProperties);
+            DrawPBRProperties();
             DrawRimLightProperties();
         }
         
         private void DrawBaseProperties()
         {
-            DrawKeyword(Keywords._ReceiveShadow, _receiveShadowProp);
+            //Fade
+            {
+                if(BeginKeyWordGroup(Keywords._UseFade, _useFadeProp))
+                {
+                    DrawSliderProperty(_fadeProp);
+                }
+                EndKeyWordGroup();
+            }
+            
             //Cutoff
             {
-                BeginKeyWordGroup(Keywords._UseCutoff, _useCutoffProp);
+                if(BeginKeyWordGroup(Keywords._UseCutoff, _useCutoffProp))
                 {
                     DrawSliderProperty(_cutoffProp);
                 }
@@ -224,7 +245,7 @@ namespace URPToon
             
             // Alpha
             {
-                BeginKeyWordGroup(Keywords._UseAlpha, _useAlphaProp);
+                if(BeginKeyWordGroup(Keywords._UseAlpha, _useAlphaProp))
                 {
                     DrawSliderProperty(_alphaProp);
                 }
@@ -242,6 +263,7 @@ namespace URPToon
         private void DrawPBRProperties()
         {
             
+            DrawKeyword(Keywords._ReceiveShadow, _receiveShadowProp);
             // Advanced
             {
                 if(BeginKeyWordGroup(Keywords._EnableAdvanced, _enableAdvancedProp))

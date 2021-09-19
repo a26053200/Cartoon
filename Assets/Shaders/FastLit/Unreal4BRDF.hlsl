@@ -5,6 +5,8 @@
 //		 Unreal4 BRDF		//
 //////////////////////////////
 
+#include "LitFastInputs.hlsl"
+
 #define EPSILON 0.000000000001f
 //====================
 // Utils
@@ -55,7 +57,7 @@ inline float3 F_LambertDiffuse(float3 kd)
 //====================
 // Specular
 //====================
-float D_GGX1( float Roughness, float NoH )
+float D_GGX_zn( float Roughness, float NoH )
 {
 	float a = Roughness * Roughness;
 	float a2 = a * a;
@@ -119,6 +121,13 @@ float3 F_Fresnel( float3 SpecularColor, float VoH )
 	return 0.5 * Square( (g - VoH) / (g + VoH) ) * ( 1 + Square( ((g+VoH)*VoH - 1) / ((g-VoH)*VoH + 1) ) );
 }
 
+ //F项 直接光
+float3 F_Function(float HdotL,float3 F0)
+{
+    float fresnel = exp2((-5.55473 * HdotL - 6.98316) * HdotL);
+    return lerp(fresnel, 1, F0);
+}
+
 inline float3 Fresnel_UE4(float3 N, float3 V, float3 H, float3 F0)
 {
 	return F0 + (float3(1, 1, 1) - F0) * pow(2, ((-5.55473) * dot(V, H) - 6.98316) * dot(V, H));
@@ -141,6 +150,22 @@ float G_Vis_Kelemen( float VoH )
 	return rcp( 4 * VoH * VoH + 1e-5);
 }
 
+//G项子项
+float G_Section(float dot,float k)
+{
+    float nom = dot;
+    float denom = lerp(dot,1,k);
+    return nom/denom;
+}
+
+float G_SchlickGGX(float NdotL, float NdotV, float roughness)
+{
+    float k = pow(1 + roughness, 2)/8;
+    float Gnl = G_Section(NdotL, k);
+    float Gnv = G_Section(NdotV, k);
+    return Gnl * Gnv;
+}
+ 
 inline float Geometry_Smiths_SchlickGGX(float3 N, float3 V, float roughness)
 {	
 	// G_ShclickGGX(N, V, k) = ( dot(N,V) ) / ( dot(N,V)*(1-k) + k )
@@ -182,7 +207,9 @@ inline float Geometry(float3 normal, float3 wi, float3 wo, float roughness)
     return GeometrySmithsSchlickGGX(normal, wi, roughness) * GeometrySmithsSchlickGGX(normal, wo, roughness);
 }
 
-float3 Unreal4BRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, float3 X, float3 Y, float3 lightColor)
+float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, 
+    float3 L, float3 V, float3 N, float3 X, float3 Y, 
+    float3 lightColor, float shadowAttenuation)
 { 
     float3 H = SafeNormalize(L + V);
     
@@ -192,54 +219,103 @@ float3 Unreal4BRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, f
     float LdotH = saturate(dot(L, H));
     float VdotH = saturate(dot(V, H));
     
-    float3 Wi = -L;
-    float3 Wo = -V;
-    
-    float3 albedo = surfaceData.albedo;
-    float roughness = surfaceData.roughness;
-    float metallic = surfaceData.metallic;
-    // Diffuse
-    float3 diffuse = Diffuse_Lambert(surfaceData.albedo);
-    //float3 diffuse = Diffuse_Burley(surfaceData.albedo, brdfData.roughness, NdotV, NdotL, VdotH);//( float3 DiffuseColor, float Roughness, float NoV, float NoL, float VoH )
-    
+    //Cook-Torrance模型BRDF
     // D(h) 法线分布函数（NDF）
     // F(v,h) 菲尼尔方程 （Fresnel）
     // G(l,v) 几何衰减因子 (Geometrial Attenuation Factor)
+    float3 albedo = surfaceData.albedo * _BaseColor;
+    float metallic = surfaceData.metallic;
+    float3 F0 = lerp(kDielectricSpec.rgb, albedo, metallic);
+    //Cook-Torrance模型 BRDF
+    float D = D_GGX_zn(brdfData.perceptualRoughness, NdotH);
+    //float D = D_GGXAniso_zn(TdotH, BdotH, 1 - surfaceData.smoothness, 1, NdotH);
+    float F = F_Function(LdotH, F0);
+    float G = G_SchlickGGX(NdotL, NdotV, brdfData.perceptualRoughness);
+    float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
     
-    //float D = D_GGX1(brdfData.roughness, NdotH);
-    //float D = D_Blinn(brdfData.roughness, NdotH);
-    //float D = D_GGXaniso(brdfData.roughness, brdfData.roughness, NdotH, H, X, Y);
-    //float D = NormalDistributionGGX(N, H, roughness);
+    //漫反射系数
+    float3 kd = (1 - F) * (1 - metallic);
+    float3 DiffuseResult = kd * albedo;
     
-    float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), albedo, metallic);
-    
-    //float F = F_Schlick(surfaceData.specularColor, VdotH);
-    //float F = F_Fresnel(surfaceData.specularColor, VdotH);
-    float3 F = Fresnel_UE4(N, V, H, F0);
-    
-    //float G = G_Vis_Schlick(brdfData.roughness, NdotV, NdotL);
-    //float G = G_Vis_Kelemen(VdotH);
-    float  G   = Geometry(N, Wo, Wi, roughness);
-    
-    
-    float  NDF = NormalDistributionGGX(N, H, roughness);
-    float  denom = (4.0f * max(0.0f, dot(Wo, N)) * max(0.0f, dot(Wi, N))) + 0.0001f;
-    
-    //Unreal4 BRDF
-    float3 SpecularResult = NDF * F * G / denom;
-    
-    float3 kD = (float3(1, 1, 1) - F) * (1.0f - metallic) * albedo;
-	float3 DiffuseResult = F_LambertDiffuse(kD);
-    
-    //Cook-Torrance模型BRDF
-    //float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
-    
-    //直接光照部分结果
-    //float3 SpecularResult = SpecularResult * NdotL * PI;// * lightColor * NdotL * UNITY_PI;
-    //float3 DiffuseResult = diffuse * NdotL;
+#if defined(_EnableAdvanced)
+    float3 DirectLightResult = DiffuseResult * surfaceData.diffuse + SpecularResult * surfaceData.specular;
+#else
     float3 DirectLightResult = DiffuseResult + SpecularResult;
-    
-    return DirectLightResult;
+#endif
+
+#if defined(_ReceiveShadow)
+     return DirectLightResult * lightColor * NdotL * shadowAttenuation;
+ #else
+     return DirectLightResult * lightColor * NdotL;
+ #endif 
 }
 
+float3 FastPBR(BRDFData brdfData, DisneySurfaceData surfaceData, Light light, DisneyInputData inputData)
+{
+    //return float4(light.color,1);
+    return FastBRDF(
+            brdfData, 
+            surfaceData, light.direction, 
+            inputData.viewDirectionWS, 
+            inputData.normalWS,
+            inputData.tangentWS, 
+            inputData.bitangentWS, 
+            light.color,
+            light.shadowAttenuation * light.distanceAttenuation
+            );
+}
+
+float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData)
+{
+    BRDFData brdfData;
+    InitializeBRDFData(surfaceData.albedo, surfaceData.metallic, surfaceData.smoothness, brdfData);
+    
+    Light mainLight = GetMainLight(inputData.shadowCoord);
+    MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
+    
+    float3 color = FastPBR(brdfData, surfaceData, mainLight, inputData);
+    //return float4(color,1);
+    
+#ifdef _UseSSS
+    /*
+    float3 sssColor =  FastSubsurfaceScattering(
+                mainLight.direction,
+                inputData.normalWS,
+                inputData.viewDirectionWS,
+                surfaceData.subsurface,
+                mainLight.color,
+                mainLight.shadowAttenuation * mainLight.distanceAttenuation 
+                );            
+    //color += sssColor;//lerp(sssColor, 0, step(surfaceData.roughness, _SSSThreshold));
+    //return float4(sssColor,1);
+    */
+#endif  
+    
+    float3 iblColor = GlobalIllumination(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS);
+    //return float4(iblColor,1);
+#if defined(_EnableAdvanced)
+    color += lerp(0, iblColor, surfaceData.sheen);
+#else
+    color += iblColor;
+#endif  
+
+#ifdef _ADDITIONAL_LIGHTS
+    int pixelLightCount = GetAdditionalLightsCount();
+    for (int i = 0; i < pixelLightCount; ++i)
+    {
+        Light addlight = GetAdditionalLight(i, inputData.positionWS.xyz);
+        //addlight.color *= ssao;
+        color += FastPBR(brdfData, surfaceData, mainLight, inputData);
+    }
+#endif
+
+#ifdef _ADDITIONAL_LIGHTS_VERTEX
+    color += inputData.vertexLighting * brdfData.diffuse;
+#endif
+    color += surfaceData.emission * _EmissionColor;
+#ifdef _UseCutoff
+    clip(surfaceData.emission - _Cutoff);
+#endif
+    return float4(color,1);
+}
 #endif

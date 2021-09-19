@@ -12,6 +12,11 @@ Shader "FastLit/FastLit"
         _MaskMap("Mask Map", 2D) = "white" {}
         
         //[Space]
+        //[Header(Fade)][Space]
+        [Toggle(Use Fade)]_UseFade("Use Fade", Float) = 0
+        _Fade("Fade", Range(0,1)) = 0.5
+        
+        //[Space]
         //[Header(Cutoff)][Space]
         [Toggle(Use Cutoff)]_UseCutoff("Use Cutoff", Float) = 0
         _Cutoff("Cutoff", Range(0,1)) = 0.5
@@ -81,13 +86,14 @@ Shader "FastLit/FastLit"
             
             // -------------------------------------
             // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             //#pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             // -------------------------------------
             
             #pragma shader_feature_local_fragment _ReceiveShadow
+            #pragma shader_feature_local_fragment _UseFade
             #pragma shader_feature_local_fragment _UseCutoff
             #pragma shader_feature_local_fragment _UseAlpha
             #pragma shader_feature_local_fragment _EnableAdvanced

@@ -29,6 +29,7 @@ CBUFFER_START(UnityPerMaterial)
     
     float _Gloss, _Shift;
     
+    float _Fade;
     //float
     float _BumpScale;
     float _Roughness;
@@ -75,6 +76,7 @@ struct Varyings
     float4 bitangentWS              : TEXCOORD4;    
     float4 shadowCoord              : TEXCOORD5;
     float4 fogFactorAndVertexLight  : TEXCOORD6;
+    float4 positionSS               : TEXCOORD7; // Screen Space Position
     
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -100,6 +102,7 @@ struct DisneySurfaceData
 {
     float3  albedo;
     float   alpha;
+    float   fade;
     float   emission;
     float3  normalTS;
     
@@ -130,7 +133,8 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.albedo = baseColorMap.rgb;
     outSurfaceData.emission = baseColorMap.a;
     outSurfaceData.alpha = _Alpha;
-
+    outSurfaceData.fade = _Fade;
+    
     outSurfaceData.normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv));
     
     float4 maskMap = SAMPLE_TEXTURE2D(_MaskMap,sampler_MaskMap,uv);

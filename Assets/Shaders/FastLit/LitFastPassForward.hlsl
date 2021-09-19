@@ -6,7 +6,9 @@
 #define FAST_LIT_PASS_INCLUDED
  
 #include "LitFastInputs.hlsl"
-#include "LitFastBRDF.hlsl"
+//#include "LitFastBRDF.hlsl"
+#include "Unreal4BRDF.hlsl"
+#include "DitherDistance.hlsl"
 
 float3 ACESFilm(float3 x)
 {
@@ -30,6 +32,7 @@ Varyings LitDinesyPassVertex(Attributes input)
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
     output.positionCS = vertexInput.positionCS;
     output.positionWS = vertexInput.positionWS;
+    output.positionSS = ComputeScreenPos(input.positionOS);
     
     half3 viewDirWS = GetCameraPositionWS() - vertexInput.positionWS;
     //half3 viewDirWS = GetWorldSpaceViewDir(vertexInput.positionWS);
@@ -63,6 +66,10 @@ half4 LitDinesyPassFragment(Varyings input) : SV_Target
 
     DisneySurfaceData disneySurfaceData;
     InitializeDisneySurfaceData(input.uv.xy, disneySurfaceData);
+    
+#ifdef _UseFade
+    PerformDither(input, disneySurfaceData.fade);
+#endif
 
 #ifdef _ALPHATEST_ON
     clip(disneySurfaceData.emission - _Cutoff);
@@ -70,7 +77,7 @@ half4 LitDinesyPassFragment(Varyings input) : SV_Target
     DisneyInputData disneyInputData;
     InitializeDisneyInputData(input, disneySurfaceData.normalTS, disneyInputData);
 
-    float4 color = DisneyBRDFFragment(disneyInputData, disneySurfaceData);
+    float4 color = FastBRDFFragment(disneyInputData, disneySurfaceData);
     color.rgb = MixFog(color.rgb,  disneyInputData.fogCoord);
     color.rgb = ACESFilm(color.rgb);
     //color = LinearToSRGB(color);

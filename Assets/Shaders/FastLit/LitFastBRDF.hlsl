@@ -1,15 +1,11 @@
 #ifndef FAST_LIT_BRDF_INCLUDED
 #define FAST_LIT_BRDF_INCLUDED
 
-#include "LitFastInputs.hlsl"
-#include "Unreal4BRDF.hlsl"
+//////////////////////////////
+//		 Fast BRDF		//
+//////////////////////////////
 
-#define UNITY_INV_PI        0.31830988618f
-// Linear values
-#define unity_ColorSpaceGrey fixed4(0.214041144, 0.214041144, 0.214041144, 0.5)
-#define unity_ColorSpaceDouble fixed4(4.59479380, 4.59479380, 4.59479380, 2.0)
-#define unity_ColorSpaceDielectricSpec half4(0.04, 0.04, 0.04, 1.0 - 0.04) // standard dielectric reflectivity coef at incident angle (= 4%)
-#define unity_ColorSpaceLuminance half4(0.0396819152, 0.458021790, 0.00609653955, 1.0) // Legacy: alpha is set to 1.0 to specify linear mode
+#include "LitFastInputs.hlsl"
 
 float D_GGX_zn(float roughness, float NdotH)
 {
@@ -49,7 +45,9 @@ float3 F_Function(float HdotL,float3 F0)
     return lerp(fresnel, 1, F0);
 }
 
-float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, float3 V, float3 N, float3 X, float3 Y, float3 lightColor, float shadowAttenuation)
+float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, 
+    float3 L, float3 V, float3 N, float3 X, float3 Y, 
+    float3 lightColor, float shadowAttenuation)
 {    
     float3 H = SafeNormalize(L + V);
     float NdotL = max(saturate(dot(N, L)), 0.000001);
@@ -61,12 +59,10 @@ float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, floa
     float BdotH = max(saturate(dot(Y, H)), 0.000001);
     
     //return surfaceData.smoothness.rrr;
-     /*
+    /*
     float3 albedo = surfaceData.albedo * _BaseColor;
-    
     float perceptualRoughness = surfaceData.roughness;
     float metallic = surfaceData.metallic;
-   
     float3 F0 = lerp(kDielectricSpec.rgb, albedo, metallic);
     //Cook-Torrance模型 BRDF
     float D = D_GGX_zn(brdfData.roughness, NdotH);
@@ -118,12 +114,11 @@ float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, float3 L, floa
     //return lerp(0, rimColor * surfaceData.rimStrength, NdotV);
 #endif
   
- #if defined(_ReceiveShadow)
-     return DirectLightResult * lightColor * NdotL * shadowAttenuation;
- #else
-     return DirectLightResult * lightColor * NdotL;
- #endif   
-    
+#if defined(_ReceiveShadow)
+    return DirectLightResult * lightColor * NdotL * shadowAttenuation;
+#else
+    return DirectLightResult * lightColor * NdotL;
+#endif   
 }
 
 float3 FastPBR(BRDFData brdfData, DisneySurfaceData surfaceData, Light light, DisneyInputData inputData)
@@ -156,9 +151,8 @@ float3 FastAnisotropic(float3 L, float3 N, float3 V, float3 lightCol, float subs
     return sss * lightCol * subsurface * _SSSColor;
 }
 
-float4 DisneyBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData)
+float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData)
 {
-  
     BRDFData brdfData;
     InitializeBRDFData(surfaceData.albedo, surfaceData.metallic, surfaceData.smoothness, brdfData);
     
