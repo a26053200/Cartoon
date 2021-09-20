@@ -6,6 +6,7 @@ Shader "FastLit/FastLit"
 {
     Properties
     {
+        [Toggle(Use Specular Mode)]_UseSpecularMode("Use Specular Mode", Float) = 0
         [MainColor] _BaseColor("Color", Color) = (1,1,1,1)
         [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
         _BumpMap("Normal Map", 2D) = "bump" {}
@@ -32,6 +33,7 @@ Shader "FastLit/FastLit"
         _Diffuse ("Diffuse",            Range(0,2)) = 1
         _Specular ("Specular",          Range(0,2)) = 1
         _Sheen ("Sheen",                Range(0,1)) = 1
+        
         //_SSAO ("SSAO",          Range(0,1)) = 0.0
         
         //[Space]
@@ -39,6 +41,7 @@ Shader "FastLit/FastLit"
         [Toggle(Receive Shadow)]_ReceiveShadow("Receive Shadow", Float) = 0
         _Occlusion("Occlusion",       Range(0,2)) = 1
         _Metallic ("Metallic",          Range(0,1)) = 0.0
+        _SpecularColor("Specular Color",       Color) = (1,1,1,1)
         _Smoothness ("Smoothness",      Range(0,1)) = 0.5
        
         //[Space]
@@ -92,6 +95,7 @@ Shader "FastLit/FastLit"
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             // -------------------------------------
             
+            #pragma shader_feature_local_fragment _UseSpecularMode
             #pragma shader_feature_local_fragment _ReceiveShadow
             #pragma shader_feature_local_fragment _UseFade
             #pragma shader_feature_local_fragment _UseCutoff
@@ -116,6 +120,8 @@ Shader "FastLit/FastLit"
         }
         
         UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
+        
+        UsePass "Universal Render Pipeline/Lit/DepthOnly" 
     }
     CustomEditor "URPToon.FastLitShaderGUI"
 }

@@ -7,49 +7,12 @@
 
 #include "LitFastInputs.hlsl"
 
-float D_GGX_zn(float roughness, float NdotH)
-{
-	float a = roughness * roughness;
-	float NdotH2 = NdotH * NdotH;
-	float a2 = a * a;
-	float d = NdotH2 * (a2 - 1) + 1;//分母
-	return a2 / ( PI * d * d );					// 4 mul, 1 rcp
-}
-//各向异性D项目
-float D_GGXAniso_zn(float TdotH, float BdotH, float mt, float mb, float nh) 
-{
-	float d = TdotH * TdotH / (mt * mt) + BdotH * BdotH / (mb * mb) + nh * nh;
-	return (1.0 / ( PI * mt*mb * d*d));
-}
-
-//G项子项
- float G_Section(float dot,float k)
- {
-     float nom = dot;
-     float denom = lerp(dot,1,k);
-     return nom/denom;
- }
-         
-float G_SchlickGGX(float NdotL, float NdotV, float roughness)
- {
-     float k = pow(1 + roughness, 2)/8;
-     float Gnl = G_Section(NdotL, k);
-     float Gnv = G_Section(NdotV, k);
-     return Gnl * Gnv;
- }
- 
- //F项 直接光
-float3 F_Function(float HdotL,float3 F0)
-{
-    float fresnel = exp2((-5.55473 * HdotL - 6.98316) * HdotL);
-    return lerp(fresnel, 1, F0);
-}
-
 float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData, 
     float3 L, float3 V, float3 N, float3 X, float3 Y, 
     float3 lightColor, float shadowAttenuation)
 {    
     float3 H = SafeNormalize(L + V);
+    
     float NdotL = max(saturate(dot(N, L)), 0.000001);
     float NdotV = max(saturate(dot(N, V)), 0.000001);
     float NdotH = max(saturate(dot(N, H)), 0.000001);
@@ -58,20 +21,14 @@ float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData,
     float TdotH = max(saturate(dot(X, H)), 0.000001);
     float BdotH = max(saturate(dot(Y, H)), 0.000001);
     
-    //return surfaceData.smoothness.rrr;
     /*
-    float3 albedo = surfaceData.albedo * _BaseColor;
-    float perceptualRoughness = surfaceData.roughness;
-    float metallic = surfaceData.metallic;
-    float3 F0 = lerp(kDielectricSpec.rgb, albedo, metallic);
-    //Cook-Torrance模型 BRDF
-    float D = D_GGX_zn(brdfData.roughness, NdotH);
-    //float D = D_GGXAniso_zn(TdotH, BdotH, 1 - surfaceData.smoothness, 1, NdotH);
-    float F = F_Function(LdotH, F0);
-    float G = G_SchlickGGX(NdotL, NdotV, brdfData.roughness);
-    float3 SpecularResult = (D * G * F * 0.25) / (NdotV * NdotL);
-    //漫反射系数
-    float3 kd = (1 - F) * (1 - metallic);
+    float NdotL = saturate(dot(N, L));
+    float NdotV = saturate(dot(N, V));
+    float NdotH = saturate(dot(N, H));
+    float LdotH = saturate(dot(L, H));
+    float VdotH = saturate(dot(V, H));
+    float TdotH = saturate(dot(X, H));
+    float BdotH = saturate(dot(Y, H));
     */
     // Unity URP  https://community.arm.com/events/1155
     float d = NdotH * NdotH * brdfData.roughness2MinusOne + 1.00001f;
@@ -101,7 +58,7 @@ float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData,
     float dirAtten = smoothstep(-1, 0, aBdotH);
     float anisotropic = dirAtten * pow(sinTH, surfaceData.anisotropicGloss);
     
-    float3 AnisotropicResult = anisotropic * lightColor * saturate(NdotL * 2);
+    float3 AnisotropicResult = anisotropic * saturate(NdotL * 2);
     //return lerp(0, AnisotropicResult, surfaceData.anisotropic);
     DirectLightResult += lerp(0, AnisotropicResult, surfaceData.anisotropic);
 #endif
@@ -154,9 +111,17 @@ float3 FastAnisotropic(float3 L, float3 N, float3 V, float3 lightCol, float subs
 float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData)
 {
     BRDFData brdfData;
-    InitializeBRDFData(surfaceData.albedo, surfaceData.metallic, surfaceData.smoothness, brdfData);
+    InitializeBRDFData(surfaceData.albedo, surfaceData.metallic, surfaceData.specularColor, surfaceData.smoothness, brdfData);
     
-    Light mainLight = GetMainLight(inputData.shadowCoord);
+#if defined(SHADOWS_SHADOWMASK) && defined(LIGHTMAP_ON)
+    half4 shadowMask = inputData.shadowMask;
+#elif !defined (LIGHTMAP_ON)
+    half4 shadowMask = unity_ProbesOcclusion;
+#else
+    half4 shadowMask = half4(1, 1, 1, 1);
+#endif
+
+    Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, shadowMask);
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
     
     float3 color = FastPBR(brdfData, surfaceData, mainLight, inputData);

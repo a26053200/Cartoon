@@ -6,8 +6,9 @@
 #define FAST_LIT_PASS_INCLUDED
  
 #include "LitFastInputs.hlsl"
-//#include "LitFastBRDF.hlsl"
-#include "Unreal4BRDF.hlsl"
+#include "LitFastBRDF.hlsl"
+//#include "Unreal4BRDF.hlsl"
+//#include "CookTorranceBRDF.hlsl"
 #include "DitherDistance.hlsl"
 
 float3 ACESFilm(float3 x)
@@ -79,7 +80,7 @@ half4 LitDinesyPassFragment(Varyings input) : SV_Target
 
     float4 color = FastBRDFFragment(disneyInputData, disneySurfaceData);
     color.rgb = MixFog(color.rgb,  disneyInputData.fogCoord);
-    color.rgb = ACESFilm(color.rgb);
+    //color.rgb = ACESFilm(color.rgb);
     //color = LinearToSRGB(color);
 
     //float4 baseColorMap = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap, input.uv.xy);

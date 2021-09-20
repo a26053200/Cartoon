@@ -155,7 +155,7 @@ namespace URPToon
             if (!drawEnable || materialProperty == null) return false;
             EditorGUI.BeginChangeCheck();
             _materialEditor.ShaderProperty(materialProperty, label ?? materialProperty.displayName);
-            bool enable = _material.GetFloat(materialProperty.name) == 1.0;
+            bool enable = _material.GetFloat(materialProperty.name) == 1.0f;
             if (EditorGUI.EndChangeCheck())
                 SetKeyword(_material, keyword, enable);
             return enable;
@@ -179,6 +179,11 @@ namespace URPToon
             if (drawEnable)
                 EditorGUI.indentLevel -= 1;
             drawEnable = true;
+        }
+
+        protected bool IsKeywordEnable(MaterialProperty materialProperty)
+        {
+           return _material.GetFloat(materialProperty.name) == 1.0f;
         }
 
         #endregion

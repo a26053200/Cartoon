@@ -93,7 +93,8 @@ inline float NormalDistributionGGX(float3 N, float3 H, float roughness)
 	const float a2 = a * a;
 	const float nh2 = pow(max(dot(N, H), 0), 2);
 	const float denom = (PI * pow((nh2 * (a2 - 1.0f) + 1.0f), 2));
-	if (denom < EPSILON) return 1.0f;
+	if (denom < EPSILON) 
+	    return 1.0f;
 #if 0
 	return min(a2 / denom, 10);
 #else
@@ -122,7 +123,8 @@ float3 F_Fresnel( float3 SpecularColor, float VoH )
 }
 
  //F项 直接光
-float3 F_Function(float HdotL,float3 F0)
+ 
+f0loat3 F_Function(float HdotL,float3 F0)
 {
     float fresnel = exp2((-5.55473 * HdotL - 6.98316) * HdotL);
     return lerp(fresnel, 1, F0);
@@ -227,7 +229,7 @@ float3 FastBRDF(BRDFData brdfData, DisneySurfaceData surfaceData,
     float metallic = surfaceData.metallic;
     float3 F0 = lerp(kDielectricSpec.rgb, albedo, metallic);
     //Cook-Torrance模型 BRDF
-    float D = D_GGX_zn(brdfData.perceptualRoughness, NdotH);
+    float D = D_GGX_zn(brdfData.roughness, NdotH);
     //float D = D_GGXAniso_zn(TdotH, BdotH, 1 - surfaceData.smoothness, 1, NdotH);
     float F = F_Function(LdotH, F0);
     float G = G_SchlickGGX(NdotL, NdotV, brdfData.perceptualRoughness);

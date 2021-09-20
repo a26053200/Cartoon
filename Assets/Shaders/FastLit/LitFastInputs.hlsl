@@ -113,6 +113,7 @@ struct DisneySurfaceData
     float   occlusion;
     
     float   specular;
+    float3   specularColor;
     float   diffuse;
     float   sheen;
     
@@ -176,6 +177,7 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.occlusion = lerp(1, b, _Occlusion);
     */
     outSurfaceData.specular = _Specular;
+    outSurfaceData.specularColor = _SpecularColor;//lerp(0, _SpecularColor, g);
     outSurfaceData.diffuse = _Diffuse;
     outSurfaceData.sheen = _Sheen;
     
@@ -208,20 +210,27 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
     outInputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 }
 
-inline void InitializeBRDFData(float3 albedo, float metallic, float smoothness,out BRDFData brdfData)
+inline void InitializeBRDFData(float3 albedo, float metallic, float3 specularColor, float smoothness,out BRDFData brdfData)
 {
     brdfData = (BRDFData)0;
     
-    //IBL
+#ifdef _UseSpecularMode
+    half reflectivity = ReflectivitySpecular(specularColor);
+    half oneMinusReflectivity = 1.0 - reflectivity;
+    brdfData.diffuse = albedo * (half3(1.0h, 1.0h, 1.0h) - specularColor);
+    brdfData.specular = specularColor;
+#else
     float oneMinusReflectivity = OneMinusReflectivityMetallic(metallic);
     float reflectivity = 1.0 - oneMinusReflectivity;
-
     brdfData.diffuse             = albedo * oneMinusReflectivity;
     brdfData.specular            = lerp(kDieletricSpec.rgb, albedo, metallic);
+#endif
+    
     brdfData.grazingTerm         = saturate(smoothness + reflectivity);
     brdfData.perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(smoothness);
     brdfData.roughness           = PerceptualRoughnessToRoughness(brdfData.perceptualRoughness);
-    brdfData.roughness2          = brdfData.roughness * brdfData.roughness;
+    brdfData.roughness2          = max(brdfData.roughness * brdfData.roughness, HALF_MIN);
+    //brdfData.roughness2          = brdfData.roughness * brdfData.roughness;
     brdfData.normalizationTerm   = brdfData.roughness * 4.0h + 2.0h;
     brdfData.roughness2MinusOne  = brdfData.roughness2 - 1.0h;
 }

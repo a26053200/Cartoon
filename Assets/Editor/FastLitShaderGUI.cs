@@ -22,6 +22,7 @@ namespace URPToon
         
         private struct Keywords
         {
+            public static readonly string _UseSpecularMode = "_UseSpecularMode";
             public static readonly string _UseFade = "_UseFade";
             public static readonly string _UseCutoff = "_UseCutoff";
             public static readonly string _UseAlpha = "_UseAlpha";
@@ -58,6 +59,7 @@ namespace URPToon
             //PBR
             public static readonly string Occlusion = "_Occlusion";
             public static readonly string Metallic = "_Metallic";
+            public static readonly string SpecularColor = "_SpecularColor";
             public static readonly string Smoothness = "_Smoothness";
             
             //SSS
@@ -94,6 +96,8 @@ namespace URPToon
         private bool _rimFoldout;
         private bool _outlineFoldout;
         
+        private MaterialProperty _useSpecularModeProp;
+        
         // Base
         private MaterialProperty _baseMapProp;
         private MaterialProperty _maskMapProp;
@@ -122,6 +126,7 @@ namespace URPToon
         // PBR
         private MaterialProperty _receiveShadowProp;
         private MaterialProperty _occlusionProp;
+        private MaterialProperty _specularColorProp;
         private MaterialProperty _metallicProp;
         private MaterialProperty _smoothnessProp;
         
@@ -150,6 +155,9 @@ namespace URPToon
         
         protected override void OnShaderGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
+            //Cutoff
+            _useSpecularModeProp = FindProperty(Keywords._UseSpecularMode, properties, false);
+            
             //Foldout
             _baseFoldOut = GetFoldoutState(materialEditor, Styles.BaseFold.text);
             _pbrFoldout = GetFoldoutState(materialEditor, Styles.PBRFold.text);
@@ -185,6 +193,7 @@ namespace URPToon
             _receiveShadowProp = FindProperty(Keywords._ReceiveShadow, properties, false);
             _occlusionProp = FindProperty(PropertyNames.Occlusion, properties, false);
             _metallicProp = FindProperty(PropertyNames.Metallic, properties, false);
+            _specularColorProp = FindProperty(PropertyNames.SpecularColor, properties, false);
             _smoothnessProp = FindProperty(PropertyNames.Smoothness, properties, false);
             
             //SSS
@@ -216,6 +225,8 @@ namespace URPToon
         
         private void DrawProperties()
         {
+            DrawKeyword(Keywords._UseSpecularMode, _useSpecularModeProp);
+            
             //DrawFoldout(Styles.BaseFold.text, ref _baseFoldOut, DrawBaseProperties);
             DrawBaseProperties();
             //DrawFoldout(Styles.PBRFold.text, ref _pbrFoldout, DrawPBRProperties);
@@ -280,7 +291,11 @@ namespace URPToon
             // PBR
             {
                 DrawSliderProperty(_occlusionProp);
-                DrawSliderProperty(_metallicProp);
+                if (IsKeywordEnable(_useSpecularModeProp))
+                    DrawColorProperty(_specularColorProp);
+                else
+                    DrawSliderProperty(_metallicProp);
+                
                 DrawSliderProperty(_smoothnessProp);
             }
             
