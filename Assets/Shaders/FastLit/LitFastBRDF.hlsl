@@ -117,6 +117,14 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
 #endif
 
     Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, shadowMask);
+    
+    #if defined(_SCREEN_SPACE_OCCLUSION)
+        AmbientOcclusionFactor aoFactor = GetScreenSpaceAmbientOcclusion(inputData.normalizedScreenSpaceUV);
+        mainLight.color *= aoFactor.directAmbientOcclusion;
+        surfaceData.occlusion = min(surfaceData.occlusion, aoFactor.indirectAmbientOcclusion);
+        //return float4(aoFactor.directAmbientOcclusion.rrr, 1);
+    #endif
+    
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
 
     float NdotL = saturate(dot(inputData.normalWS, mainLight.direction));
@@ -132,8 +140,8 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
  
 #ifdef _UseRimLight
     float3 rimColor = FastRimLight(inputData, surfaceData, mainLight, shadowAttenuatio);
-    //return float4(rimColor, 1);
     DirectLightResult += rimColor;
+    //return float4(rimColor, 1);
 #endif
 
     float3 color = DirectLightResult;
@@ -153,7 +161,9 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
     {
         Light addlight = GetAdditionalLight(i, inputData.positionWS.xyz);
         float aNdotL = saturate(dot(inputData.normalWS, addlight.direction));
-        //addlight.color *= ssao;
+        #if defined(_SCREEN_SPACE_OCCLUSION)
+            addlight.color *= aoFactor.directAmbientOcclusion;
+        #endif
         color += FastDirectLight(brdfData, surfaceData, inputData, addlight, aNdotL, 1);
 #ifdef _UseSSS
         //half3 screenUV = inputData.positionSS.xyz / inputData.positionSS.w;

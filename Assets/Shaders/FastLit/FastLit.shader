@@ -91,6 +91,7 @@ Shader "FastLit/FastLit"
             
             // -------------------------------------
             // Universal Pipeline keywords
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
@@ -120,9 +121,11 @@ Shader "FastLit/FastLit"
             ENDHLSL
         }
         
-        UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
+        //UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
         
-        UsePass "Universal Render Pipeline/Lit/DepthOnly" 
+        //UsePass "Universal Render Pipeline/Lit/DepthOnly" 
+        
+        //UsePass "Universal Render Pipeline/Lit/DepthNormals" 
     }
     CustomEditor "URPToon.FastLitShaderGUI"
 }
