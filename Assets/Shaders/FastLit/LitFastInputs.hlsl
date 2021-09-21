@@ -15,44 +15,56 @@ struct VertexPositionInputs
 #ifndef FAST_LIT_INPUTS
 #define FAST_LIT_INPUTS
 
-CBUFFER_START(UnityPerMaterial)
-    //ST
-    float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST, _LUT_ST, _NoiseTex_ST;
-    //color
-    float4 _BaseColor, _SpecularColor, _EmissionColor, _ClearcoatColor, _SheenColor, _ReflectColor, _SSSColor;
-    
-    float _Cutoff, _Alpha;
-    
-    float _SubsurfaceRange, _SSSPower, _SSSOffset, _SSSScale;
-    
-    float _Smoothness,_SSAO;
-    
-    float _Gloss, _Shift;
-    
-    float _Fade;
-    //float
-    float _BumpScale;
-    float _Roughness;
-    float _Metallic;
-    float _Diffuse;
-    float _Specular;
-    float _Occlusion;
-    float _Subsurface;
-    float _Anisotropic;
-    float _Sheen;
-    
-    float   _RimStrength;
-    float   _RimFresnelMask;
-    float3  _RimColor;
-CBUFFER_END
-
-
 //Textures
     TEXTURE2D(_BaseMap);    SAMPLER(sampler_BaseMap);
     TEXTURE2D(_BumpMap);    SAMPLER(sampler_BumpMap);
     TEXTURE2D(_MaskMap);    SAMPLER(sampler_MaskMap);
     TEXTURE2D(_ShiftTex);   SAMPLER(sampler_ShiftTex);
+    TEXTURE2D(_SSSLUT);     SAMPLER(sampler_SSSLUT);
+    TEXTURE2D_X_FLOAT(_CameraDepthTexture); SAMPLER(sampler_CameraDepthTexture);
     
+CBUFFER_START(UnityPerMaterial)
+
+    //Base
+    float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST;
+    float4 _BaseColor, _SpecularColor, _EmissionColor;
+    float _BumpScale;
+    float _Smoothness;
+    float _Occlusion;
+    //float _Roughness;
+    float _Metallic;
+    
+    float _Cutoff;
+    
+    float _Alpha;
+    
+    float _Fade;
+    
+    // Advanced
+    float _Diffuse;
+    float _Specular;
+    float _Sheen;
+    float _SSAO;
+    
+    // Rim
+    float   _RimStrength;
+    float   _RimFresnelMask;
+    float3  _RimColor;
+    
+    // Anisotropic
+    float _Anisotropic;
+    float4 _ShiftTex_ST;
+    float _Gloss;
+    float _Shift;
+    
+    // SSS
+    float _Subsurface;
+    float4 _SSSLUT_ST;// _SSSColor;
+    float _CurveFactor;
+    float _SubsurfaceRange;// _SSSPower, _SSSOffset, _SSSScale;
+    
+CBUFFER_END
+
 struct Attributes
 {
     float4 positionOS   : POSITION;
@@ -77,6 +89,7 @@ struct Varyings
     float4 shadowCoord              : TEXCOORD5;
     float4 fogFactorAndVertexLight  : TEXCOORD6;
     float4 positionSS               : TEXCOORD7; // Screen Space Position
+    float3 positionVS              : TEXCOORD8; // Screen Space Position
     
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -86,6 +99,8 @@ struct Varyings
 struct DisneyInputData
 {
     float3 positionWS;
+    float4 positionSS;
+    float3 positionVS;
     float3 normalWS;
     float3 tangentWS;
     float3 bitangentWS;
@@ -105,26 +120,36 @@ struct DisneySurfaceData
     float   fade;
     float   emission;
     float3  normalTS;
+    float3  specularColor;
     
     float   metallic;
     float   smoothness;
-    float   roughness;
-    float   subsurface;
     float   occlusion;
     
+#ifdef _UseSSS    
+    float   subsurface;
+    float   curveFactor;
+    float   subsurfaceRange;
+#endif
+    
+#ifdef _EnableAdvanced
     float   specular;
-    float3   specularColor;
     float   diffuse;
     float   sheen;
-    
+#endif
+
+#ifdef _UseAnisotropic    
     float   anisotropic;
     float   anisotropicShift;
     float   anisotropicGloss;
-    
+#endif
+
+#ifdef _UseRimLight
     float   rimStrength;
     float   rimFresnelMask;
     float3  rimColor;
-    
+#endif
+
 };
 
 void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData)
@@ -132,7 +157,7 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     //float4 baseColorMap = SRGBToLinear(SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv));
     float4 baseColorMap = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv);
     outSurfaceData.albedo = baseColorMap.rgb;
-    outSurfaceData.emission = baseColorMap.a;
+    outSurfaceData.emission = 0;//baseColorMap.a;
     outSurfaceData.alpha = _Alpha;
     outSurfaceData.fade = _Fade;
     
@@ -150,40 +175,34 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     
     half s = 1 - r;
     outSurfaceData.smoothness   = lerp(s * _Smoothness, _Smoothness, step(s, 1));
-    outSurfaceData.roughness    = 1 - outSurfaceData.smoothness;
     outSurfaceData.metallic     = lerp(0, g, _Metallic);
     outSurfaceData.occlusion    = lerp(1, b, _Occlusion);
     
-    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
+    outSurfaceData.specularColor = _SpecularColor;//lerp(0, _SpecularColor, g);
     
+#ifdef _UseSSS 
+    outSurfaceData.subsurface = _Subsurface * (1 - g);
+    outSurfaceData.curveFactor = _CurveFactor;
+    outSurfaceData.subsurfaceRange = _SubsurfaceRange;
+#endif    
+ 
+#ifdef _EnableAdvanced    
+    outSurfaceData.specular = _Specular;
+    outSurfaceData.diffuse = _Diffuse;
+    outSurfaceData.sheen = _Sheen;
+#endif
+
+#ifdef _UseAnisotropic 
     outSurfaceData.anisotropic          = lerp(0, _Anisotropic, a);
     outSurfaceData.anisotropicShift     = noiseTex.r - _Shift;
     outSurfaceData.anisotropicGloss     = _Gloss;
-    
-    /* Lit 标准
-    half r = maskMap.a;
-    half g = maskMap.r;
-    half b = maskMap.g;
-    half a = 1;//maskMap.a;
-    
-    outSurfaceData.anisotropic = lerp(0, _Anisotropic, a);
-    outSurfaceData.subsurface = lerp(lerp(_Subsurface, 0, a), 0, g * _SubsurfaceRange);
-    outSurfaceData.anisotropicShift = noiseTex.r - _Shift2;
-    outSurfaceData.anisotropicGloss = _Gloss2;
-    
-    outSurfaceData.smoothness = lerp(0, r, _Smoothness);
-    outSurfaceData.metallic = lerp(0, g, _Metallic);
-    outSurfaceData.roughness = 1 - outSurfaceData.smoothness;//lerp(_Roughness * r, 1, outSurfaceData.subsurface);
-    outSurfaceData.occlusion = lerp(1, b, _Occlusion);
-    */
-    outSurfaceData.specular = _Specular;
-    outSurfaceData.specularColor = _SpecularColor;//lerp(0, _SpecularColor, g);
-    outSurfaceData.diffuse = _Diffuse;
-    outSurfaceData.sheen = _Sheen;
-    
+#endif
+
+#ifdef _UseRimLight   
     outSurfaceData.rimColor = _RimColor;
     outSurfaceData.rimStrength = _RimStrength;
     outSurfaceData.rimFresnelMask = _RimFresnelMask;
+#endif
 }
 
 
@@ -192,7 +211,9 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
     outInputData = (DisneyInputData)0;
 
     outInputData.positionWS = input.positionWS;
-
+    outInputData.positionSS = input.positionSS;
+    outInputData.positionVS = input.positionVS;
+    
     outInputData.normalWS = TransformTangentToWorld(normalTS, float3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz));
 
     outInputData.tangentWS = input.tangentWS.xyz;
@@ -230,9 +251,9 @@ inline void InitializeBRDFData(float3 albedo, float metallic, float3 specularCol
     brdfData.perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(smoothness);
     brdfData.roughness           = PerceptualRoughnessToRoughness(brdfData.perceptualRoughness);
     brdfData.roughness2          = max(brdfData.roughness * brdfData.roughness, HALF_MIN);
-    //brdfData.roughness2          = brdfData.roughness * brdfData.roughness;
     brdfData.normalizationTerm   = brdfData.roughness * 4.0h + 2.0h;
     brdfData.roughness2MinusOne  = brdfData.roughness2 - 1.0h;
+
 }
 
 #endif

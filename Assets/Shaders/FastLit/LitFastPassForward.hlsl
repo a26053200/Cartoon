@@ -33,7 +33,8 @@ Varyings LitDinesyPassVertex(Attributes input)
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
     output.positionCS = vertexInput.positionCS;
     output.positionWS = vertexInput.positionWS;
-    output.positionSS = ComputeScreenPos(input.positionOS);
+    output.positionSS = ComputeScreenPos(output.positionCS);
+    output.positionVS = vertexInput.positionVS;
     
     half3 viewDirWS = GetCameraPositionWS() - vertexInput.positionWS;
     //half3 viewDirWS = GetWorldSpaceViewDir(vertexInput.positionWS);
@@ -78,7 +79,7 @@ half4 LitDinesyPassFragment(Varyings input) : SV_Target
     DisneyInputData disneyInputData;
     InitializeDisneyInputData(input, disneySurfaceData.normalTS, disneyInputData);
 
-    float4 color = FastBRDFFragment(disneyInputData, disneySurfaceData);
+    float4 color = FastBRDFFragment(disneyInputData, disneySurfaceData, input.uv.xy);
     color.rgb = MixFog(color.rgb,  disneyInputData.fogCoord);
     //color.rgb = ACESFilm(color.rgb);
     //color = LinearToSRGB(color);

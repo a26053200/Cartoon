@@ -68,6 +68,8 @@ namespace URPToon
             public static readonly string SSSPower = "_SSSPower";
             public static readonly string SSSOffset = "_SSSOffset";
             public static readonly string SSSColor = "_SSSColor";
+            public static readonly string CurveFactor = "_CurveFactor";
+            public static readonly string SSSLUT = "_SSSLUT";
             
             //Anisotropic
             public static readonly string Anisotropic = "_Anisotropic";
@@ -137,6 +139,8 @@ namespace URPToon
         private MaterialProperty _SSSPowerProp;
         private MaterialProperty _SSSOffsetProp;
         private MaterialProperty _SSSColorProp;
+        private MaterialProperty _SSSLUTProp;
+        private MaterialProperty _CurveFactorProp;
         
         // Anisotropic
         private MaterialProperty _useAnisotropicProp;
@@ -203,6 +207,8 @@ namespace URPToon
             _SSSPowerProp = FindProperty(PropertyNames.SSSPower, properties, false);
             _SSSOffsetProp = FindProperty(PropertyNames.SSSOffset, properties, false);
             _SSSColorProp = FindProperty(PropertyNames.SSSColor, properties, false);
+            _CurveFactorProp = FindProperty(PropertyNames.CurveFactor, properties, false);
+            _SSSLUTProp = FindProperty(PropertyNames.SSSLUT, properties, false);
             
             //Anisotropic
             _useAnisotropicProp = FindProperty(Keywords._UseAnisotropic, properties, false);
@@ -309,12 +315,13 @@ namespace URPToon
                     DrawSliderProperty(_subsurfaceRangeProp);
                     DrawSliderProperty(_SSSPowerProp);
                     DrawSliderProperty(_SSSOffsetProp);
+                    DrawSliderProperty(_CurveFactorProp);
+                    DrawTextureProperty(_SSSLUTProp);
                     EditorGUILayout.Space();
                 }
                 EndKeyWordGroup();
             }
             
-            EditorGUILayout.Space();
             // Anisotropic
             {
                 if(BeginKeyWordGroup(Keywords._UseAnisotropic, _useAnisotropicProp))

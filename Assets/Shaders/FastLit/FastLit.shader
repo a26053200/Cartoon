@@ -47,10 +47,12 @@ Shader "FastLit/FastLit"
         //[Space]
         [Toggle(Use SSS)]_UseSSS("Use SSS", Float) = 0
         _Subsurface("Subsurface",       Range(0,1)) = 0.5
-        _SubsurfaceRange("Subsurface Range",       Range(0,2)) = 0.5
-        _SSSPower("Scaterring Power",       Range(1,50)) = 0.5
-        _SSSOffset("Scaterring Offset",       Range(0,1)) = 0.5
-        _SSSColor("SSS Color",       Color) = (1,1,1,1)
+        _CurveFactor("CurveFactor",       Range(0,1)) = 0.5
+        _SSSLUT ("SSS LUT", 2D) = "white" {}
+        _SubsurfaceRange("Range",       Range(0.001,1)) = 0.5
+        //_SSSPower("Scaterring Power",       Range(0.001,10)) = 0.5
+        //_SSSOffset("Offset",       Range(0,2)) = 0.5
+        //_SSSColor("SSS Color",       Color) = (1,1,1,1)
         
         //[Space]
         [Toggle(Use Anisotropic)]_UseAnisotropic("Use Anisotropic", Float) = 0
@@ -63,7 +65,7 @@ Shader "FastLit/FastLit"
         [Toggle(Use Rim Light)]_UseRimLight("Use Rim Light", Float) = 0
         _RimColor ("Rim Color", Color) = (1, 1, 1, 1)
         _RimStrength("Rim Strength", Range(0, 2)) = 1
-        _RimFresnelMask("Rim Fresnel Mask", Range(0, 1)) = 1
+        _RimFresnelMask("Rim Fresnel Mask", Range(0, 2)) = 1
     }
     SubShader
     {
@@ -89,24 +91,23 @@ Shader "FastLit/FastLit"
             
             // -------------------------------------
             // Universal Pipeline keywords
-            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
-            //#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             // -------------------------------------
             
             #pragma shader_feature_local_fragment _UseSpecularMode
+            
             #pragma shader_feature_local_fragment _ReceiveShadow
+            #pragma shader_feature_local_fragment _EnableAdvanced
+            
             #pragma shader_feature_local_fragment _UseFade
             #pragma shader_feature_local_fragment _UseCutoff
             #pragma shader_feature_local_fragment _UseAlpha
-            #pragma shader_feature_local_fragment _EnableAdvanced
             #pragma shader_feature_local_fragment _UseSSS
             #pragma shader_feature_local_fragment _UseAnisotropic
             #pragma shader_feature_local_fragment _UseRimLight
-         
-            #define _UseSSS
-            #define _UseAnisotropic
             
             #pragma vertex LitDinesyPassVertex
             #pragma fragment LitDinesyPassFragment
