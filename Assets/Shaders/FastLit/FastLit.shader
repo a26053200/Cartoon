@@ -96,19 +96,24 @@ Shader "FastLit/FastLit"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            //#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            //#pragma multi_compile _ SHADOWS_SHADOWMASK
+            #pragma multi_compile _ LIGHTMAP_ON
+            //#pragma multi_compile _ DIRLIGHTMAP_COMBINED
             // -------------------------------------
             
+            // -------------------------------------
+            // Custom keywords
             #pragma shader_feature_local_fragment _UseSpecularMode
-            
             #pragma shader_feature_local_fragment _ReceiveShadow
             #pragma shader_feature_local_fragment _EnableAdvanced
-            
             #pragma shader_feature_local_fragment _UseFade
             #pragma shader_feature_local_fragment _UseCutoff
             #pragma shader_feature_local_fragment _UseAlpha
             #pragma shader_feature_local_fragment _UseSSS
             #pragma shader_feature_local_fragment _UseAnisotropic
             #pragma shader_feature_local_fragment _UseRimLight
+            // -------------------------------------
             
             #pragma vertex LitDinesyPassVertex
             #pragma fragment LitDinesyPassFragment
@@ -121,11 +126,11 @@ Shader "FastLit/FastLit"
             ENDHLSL
         }
         
-        //UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
+        UsePass "Universal Render Pipeline/Lit/ShadowCaster" 
         
         //UsePass "Universal Render Pipeline/Lit/DepthOnly" 
         
-        //UsePass "Universal Render Pipeline/Lit/DepthNormals" 
+        UsePass "Universal Render Pipeline/Lit/DepthNormals" 
     }
     CustomEditor "URPToon.FastLitShaderGUI"
 }

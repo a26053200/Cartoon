@@ -111,6 +111,7 @@ struct DisneyInputData
     float3 vertexLighting;
     float3 bakedGI;
     float2 normalizedScreenSpaceUV;
+    float4 shadowMask;
 };
    
 struct DisneySurfaceData
@@ -229,6 +230,7 @@ inline void InitializeDisneyInputData(Varyings input, float3 normalTS, out Disne
     outInputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
     outInputData.bakedGI = SAMPLE_GI(input.lightmapUV, input.vertexSH, outInputData.normalWS);
     outInputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+    outInputData.shadowMask = SAMPLE_SHADOWMASK(input.lightmapUV);
 }
 
 inline void InitializeBRDFData(float3 albedo, float metallic, float3 specularColor, float smoothness,out BRDFData brdfData)

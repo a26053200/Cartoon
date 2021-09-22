@@ -115,7 +115,6 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
 #else
     half4 shadowMask = half4(1, 1, 1, 1);
 #endif
-
     Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, shadowMask);
     
     #if defined(_SCREEN_SPACE_OCCLUSION)
