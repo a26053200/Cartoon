@@ -80,7 +80,7 @@ half4 LitDinesyPassFragment(Varyings input) : SV_Target
     InitializeDisneyInputData(input, disneySurfaceData.normalTS, disneyInputData);
 
     float4 color = FastBRDFFragment(disneyInputData, disneySurfaceData, input.uv.xy);
-    color.rgb = MixFog(color.rgb,  disneyInputData.fogCoord);
+    //color.rgb = MixFog(color.rgb,  disneyInputData.fogCoord);
     //color.rgb = ACESFilm(color.rgb);
     //color = LinearToSRGB(color);
 

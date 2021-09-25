@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace URPToon
 {
@@ -9,8 +10,6 @@ namespace URPToon
         public delegate void DrawPropertiesFun();
 
         protected MaterialEditor _materialEditor;
-        protected MaterialProperty[] _properties;
-        protected Material _material;
         protected bool drawEnable = true;
 
         protected bool _showVertexColor;
@@ -18,8 +17,6 @@ namespace URPToon
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             _materialEditor = materialEditor;
-            _properties = properties;
-            _material = _materialEditor.target as Material;
             
             SetDefaultGUIWidths();
 
@@ -34,15 +31,25 @@ namespace URPToon
                 drawEnable = true;
                 OnShaderGUI(materialEditor, properties);
 
-                if (!drawEnable)
-                    throw new Exception("You defined a BeginGroup, but there is no EndGroup!");
+//                if (!drawEnable)
+//                    throw new Exception("You defined a BeginGroup, but there is no EndGroup!");
                 DrawSpace();
                 DrawSpace();
                 _materialEditor.RenderQueueField();
                 _materialEditor.EnableInstancingField();
                 _materialEditor.DoubleSidedGIField();
             }
+            
+            EditorGUI.BeginChangeCheck();
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (var obj in  materialEditor.targets)
+                    MaterialChanged((Material)obj);
+            }
+            
         }
+        
+        public abstract void MaterialChanged(Material material);
 
         protected abstract void OnShaderGUI(MaterialEditor materialEditor, MaterialProperty[] properties);
 
@@ -51,14 +58,18 @@ namespace URPToon
             if (GUILayout.Button(_showVertexColor?"Origin Shader":"Vertex Shader"))
             {
                 _showVertexColor = !_showVertexColor;
-                if (_showVertexColor)
+                foreach (var obj in materialEditor.targets)
                 {
-                    _originShaderName = _material.shader.name;
-                    _material.shader = Shader.Find("LitToon/LitVertexColor");
-                }
-                else
-                {
-                    _material.shader = Shader.Find(_originShaderName);
+                    var material = (Material) obj;
+                    if (_showVertexColor)
+                    {
+                        _originShaderName = material.shader.name;
+                        material.shader = Shader.Find("LitToon/LitVertexColor");
+                    }
+                    else
+                    {
+                        material.shader = Shader.Find(_originShaderName);
+                    }
                 }
             }
         }
@@ -150,25 +161,29 @@ namespace URPToon
                 materialProperty.floatValue = newValue;
         }
         
-        protected bool DrawKeyword(string keyword, MaterialProperty materialProperty, string label = null)
+        protected void DrawKeyword(string keyword, MaterialProperty materialProperty, string label = null)
         {
-            if (!drawEnable || materialProperty == null) return false;
+            if (materialProperty == null) return;
             EditorGUI.BeginChangeCheck();
             _materialEditor.ShaderProperty(materialProperty, label ?? materialProperty.displayName);
-            bool enable = _material.GetFloat(materialProperty.name) == 1.0f;
             if (EditorGUI.EndChangeCheck())
-                SetKeyword(_material, keyword, enable);
-            return enable;
+            {
+                foreach (var obj in _materialEditor.targets)
+                {
+                    var material = (Material) obj;
+                    bool enable = material.GetFloat(materialProperty.name) == 1.0f;
+                    SetKeyword(material, keyword, enable);
+                }
+            }
         }
         
         protected Boolean BeginKeyWordGroup(string keyword, MaterialProperty materialProperty)
         {
             if (materialProperty == null) return false;
-            //EditorGUILayout.Space();
-            drawEnable = DrawKeyword(keyword, materialProperty);
+            DrawKeyword(keyword, materialProperty);
+            drawEnable = IsKeywordEnable(materialProperty);
             if (drawEnable)
             {
-                drawEnable = true;
                 EditorGUI.indentLevel += 1;
             }
             return drawEnable;
@@ -183,7 +198,13 @@ namespace URPToon
 
         protected bool IsKeywordEnable(MaterialProperty materialProperty)
         {
-           return _material.GetFloat(materialProperty.name) == 1.0f;
+            foreach (var obj in _materialEditor.targets)
+            {
+                var material = (Material) obj;
+                if (material.GetFloat(materialProperty.name) != 1.0f)
+                    return false;
+            }
+            return true;
         }
 
         #endregion
@@ -198,15 +219,10 @@ namespace URPToon
         {
             return propertyName.IndexOf("_", StringComparison.Ordinal) != -1 ? propertyName.Replace("_", "") : propertyName;
         }
-        
-        
 
         protected void SetKeyword(Material material, string keyword, bool value)
         {
-            if (value)
-                material.EnableKeyword(keyword);
-            else
-                material.DisableKeyword(keyword);
+            CoreUtils.SetKeyword(material, keyword, value);
         }
 
         protected readonly string EditorPrefKey = "URPToonShaderGUI";

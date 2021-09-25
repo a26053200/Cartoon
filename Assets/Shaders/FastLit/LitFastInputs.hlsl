@@ -19,6 +19,8 @@ struct VertexPositionInputs
     TEXTURE2D(_BaseMap);    SAMPLER(sampler_BaseMap);
     TEXTURE2D(_BumpMap);    SAMPLER(sampler_BumpMap);
     TEXTURE2D(_MaskMap);    SAMPLER(sampler_MaskMap);
+    TEXTURE2D(_MetallicGlossMap);    SAMPLER(sampler_MetallicGlossMap);
+    TEXTURE2D(_SpecGlossMap);    SAMPLER(sampler_SpecGlossMap);
     TEXTURE2D(_ShiftTex);   SAMPLER(sampler_ShiftTex);
     TEXTURE2D(_SSSLUT);     SAMPLER(sampler_SSSLUT);
     TEXTURE2D_X_FLOAT(_CameraDepthTexture); SAMPLER(sampler_CameraDepthTexture);
@@ -26,7 +28,7 @@ struct VertexPositionInputs
 CBUFFER_START(UnityPerMaterial)
 
     //Base
-    float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST;
+    float4 _BaseMap_ST, _BumpMap_ST, _Mask_ST, _MetallicGlossMap_ST, _SpecGlossMap_ST;
     float4 _BaseColor, _SpecularColor, _EmissionColor;
     float _BumpScale;
     float _Smoothness;
@@ -45,6 +47,7 @@ CBUFFER_START(UnityPerMaterial)
     float _Specular;
     float _Sheen;
     float _SSAO;
+    float _ShadowAttenuation;
     
     // Rim
     float   _RimStrength;
@@ -132,12 +135,12 @@ struct DisneySurfaceData
     float   curveFactor;
     float   subsurfaceRange;
 #endif
-    
-#ifdef _EnableAdvanced
+    // _EnableAdvanced
     float   specular;
     float   diffuse;
     float   sheen;
-#endif
+    float   ssao;
+    float   shadowAttenuation;
 
 #ifdef _UseAnisotropic    
     float   anisotropic;
@@ -157,29 +160,53 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
 {
     //float4 baseColorMap = SRGBToLinear(SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv));
     float4 baseColorMap = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv);
-    outSurfaceData.albedo = baseColorMap.rgb;
-    outSurfaceData.emission = 0;//baseColorMap.a;
+    outSurfaceData.albedo = baseColorMap.rgb * _BaseColor.rgb;
+    outSurfaceData.emission = baseColorMap.a;
     outSurfaceData.alpha = _Alpha;
     outSurfaceData.fade = _Fade;
     
     outSurfaceData.normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv));
     
-    float4 maskMap = SAMPLE_TEXTURE2D(_MaskMap,sampler_MaskMap,uv);
     float4 noiseTex = SAMPLE_TEXTURE2D(_ShiftTex,sampler_ShiftTex,uv);
-    //float4 maskMap2 = SAMPLE_TEXTURE2D(_MaskMap2,sampler_MaskMap2,uv);
 
+    float4 specGloss;
+#ifdef _UsePBRMap
+    float4 materialMap = SAMPLE_TEXTURE2D(_MetallicGlossMap, sampler_MetallicGlossMap, uv);
+    float4 specularMap = SAMPLE_TEXTURE2D(_SpecGlossMap, sampler_SpecGlossMap, uv);
+    #ifdef _UseSpecularMode
+        specGloss.rgb = specularMap.rgb * _SpecularColor.rgb;;
+        specGloss.a = 1 - specularMap.r; //smoothness
+    #else
+        specGloss.r = materialMap.r;
+        specGloss.a = 1 - specularMap.r; //smoothness
+    #endif
+    half b = 1;//occlusion
+    half a = 0;
+#else
+    float4 maskMap = SAMPLE_TEXTURE2D(_MaskMap,sampler_MaskMap,uv);
     // HLW2 标准
     half r = maskMap.r;
     half g = maskMap.g;
-    half b = maskMap.b;
+    #ifdef _UseSpecularMode
+        specGloss.rgb = _SpecularColor.rgb;;
+        specGloss.a = 1 - r; //smoothness
+    #else
+        specGloss.rgb = g.rrr;
+        specGloss.a = 1 - r; //smoothness
+    #endif
+    half b = maskMap.b;//occlusion
     half a = baseColorMap.a;
-    
-    half s = 1 - r;
-    outSurfaceData.smoothness   = lerp(s * _Smoothness, _Smoothness, step(s, 1));
-    outSurfaceData.metallic     = lerp(0, g, _Metallic);
+#endif
+
+#ifdef _UseSpecularMode
+    outSurfaceData.specularColor = specGloss.rgb;//lerp(0, _SpecularColor, g);
+    outSurfaceData.metallic     = 1;
+#else
+    outSurfaceData.specularColor = half3(0.0h, 0.0h, 0.0h);
+    outSurfaceData.metallic     = lerp(0, specGloss.r, _Metallic);
+#endif    
+    outSurfaceData.smoothness   = lerp(0, specGloss.a, _Smoothness);
     outSurfaceData.occlusion    = lerp(1, b, _Occlusion);
-    
-    outSurfaceData.specularColor = _SpecularColor;//lerp(0, _SpecularColor, g);
     
 #ifdef _UseSSS 
     outSurfaceData.subsurface = _Subsurface * (1 - g);
@@ -191,6 +218,14 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.specular = _Specular;
     outSurfaceData.diffuse = _Diffuse;
     outSurfaceData.sheen = _Sheen;
+    outSurfaceData.ssao = _SSAO;
+    outSurfaceData.shadowAttenuation = _ShadowAttenuation;
+#else
+    outSurfaceData.specular = 1;
+    outSurfaceData.diffuse = 1;
+    outSurfaceData.sheen = 1;
+    outSurfaceData.ssao = 0;
+    outSurfaceData.shadowAttenuation = 1;
 #endif
 
 #ifdef _UseAnisotropic 

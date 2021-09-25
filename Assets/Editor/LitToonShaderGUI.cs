@@ -135,6 +135,11 @@ namespace URPToon
             DrawProperties(materialEditor);
             
         }
+        
+        public override void MaterialChanged(Material material)
+        {
+            
+        }
 
         #region Properties
         private void DrawProperties(MaterialEditor materialEditor)
@@ -195,24 +200,6 @@ namespace URPToon
             }
         }
         
-        #endregion
-        
-        #region Keywords
-        private void SetMaterialKeywords(Material material)
-        {
-            // Reset
-            material.shaderKeywords = null;
-
-            // WorkflowMode
-            if (material.HasProperty(Styles.IsFace))
-            {
-                SetKeyword(material,Styles.IsFace, material.GetFloat(Styles.IsFace) == 0);
-            }
-
-            //Outline
-            //SetKeyword(material,"_USESMOOTHNORMAL", material.GetFloat(Names_IsFace) == 1.0);
-            //material.SetShaderPassEnabled("Outline", material.GetFloat(Names_IsFace) == 1.0f);
-        }
         #endregion
     }
 }

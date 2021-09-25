@@ -41,13 +41,8 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
     
     float3 specColor = SpecularResult;// * lightColor * NdotL * PI;
     float3 diffColor = brdfData.diffuse;
-#if defined(_EnableAdvanced)
     float3 DirectLightResult = diffColor * surfaceData.diffuse + brdfData.specular * specColor * surfaceData.specular;
-#else
-    float3 DirectLightResult = diffColor + brdfData.specular * specColor;
-#endif
-   
-#if defined(_ReceiveShadow)
+#if _ReceiveShadow
     DirectLightResult = DirectLightResult * light.color * NdotL * shadowAttenuation;
 #else
     DirectLightResult = DirectLightResult * light.color * NdotL;
@@ -85,7 +80,11 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
         float anisotropic = dirAtten * pow(sinTH, surfaceData.anisotropicGloss);
         
         float3 AnisotropicResult = anisotropic * saturate(NdotL * 2);
-        return lerp(0, AnisotropicResult, surfaceData.anisotropic) * shadowAttenuation;
+        #if _ReceiveShadow
+            return lerp(0, AnisotropicResult, surfaceData.anisotropic) * shadowAttenuation;
+        #else
+            return lerp(0, AnisotropicResult, surfaceData.anisotropic) * 1;
+        #endif
     }
 #endif
 
@@ -99,7 +98,11 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
         float rimIntensity = pow(rimRatio, 1 / surfaceData.rimStrength);
         float3 rimColor = lerp(0, surfaceData.rimColor, rimIntensity);
         rimColor = lerp(0, rimColor * surfaceData.rimStrength, NdotV);
-        return rimColor * shadowAttenuation;
+         #if _ReceiveShadow
+            return rimColor * shadowAttenuation;
+        #else
+            return rimColor;
+        #endif
     }
 #endif
 
@@ -119,8 +122,9 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
     
     #if defined(_SCREEN_SPACE_OCCLUSION)
         AmbientOcclusionFactor aoFactor = GetScreenSpaceAmbientOcclusion(inputData.normalizedScreenSpaceUV);
-        mainLight.color *= aoFactor.directAmbientOcclusion;
-        surfaceData.occlusion = min(surfaceData.occlusion, aoFactor.indirectAmbientOcclusion);
+        mainLight.color *= lerp(1, aoFactor.directAmbientOcclusion, surfaceData.ssao);
+        surfaceData.occlusion = lerp(surfaceData.occlusion, min(surfaceData.occlusion, aoFactor.indirectAmbientOcclusion), surfaceData.ssao);
+        
         //return float4(aoFactor.directAmbientOcclusion.rrr, 1);
     #endif
     
@@ -128,37 +132,35 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
 
     float NdotL = saturate(dot(inputData.normalWS, mainLight.direction));
     float shadowAttenuation = mainLight.shadowAttenuation * mainLight.distanceAttenuation;
-    //return float4(shadowAttenuation.rrr, 1);
+    shadowAttenuation = lerp(1, shadowAttenuation, surfaceData.shadowAttenuation);
+    
+    //return float4(mainLight.color.rgb, 1);
     //直接光照部分结果
     float3 DirectLightResult = FastDirectLight(brdfData, surfaceData, inputData, mainLight, NdotL, shadowAttenuation);
-
+    //return float4(DirectLightResult, 1);
+    
 #ifdef _UseAnisotropic    
     DirectLightResult += FastAnisotropic(inputData, surfaceData, mainLight, NdotL, shadowAttenuation);
     //return float4(DirectLightResult, 1);
 #endif
  
 #ifdef _UseRimLight
-    float3 rimColor = FastRimLight(inputData, surfaceData, mainLight, shadowAttenuatio);
+    float3 rimColor = FastRimLight(inputData, surfaceData, mainLight, shadowAttenuation);
     DirectLightResult += rimColor;
     //return float4(rimColor, 1);
 #endif
 
     float3 color = DirectLightResult;
-    
     float3 IndirectLightResult = GlobalIllumination(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS);
-    //return float4(iblColor,1);
-#if defined(_EnableAdvanced)
+    //return float4(IndirectLightResult,1);
     color += lerp(0, IndirectLightResult, surfaceData.sheen);
-#else
-    color += IndirectLightResult;
-#endif  
     
 #ifdef _ADDITIONAL_LIGHTS
     float3 sssColor = 0;
     int pixelLightCount = GetAdditionalLightsCount();
     for (int i = 0; i < pixelLightCount; ++i)
     {
-        Light addlight = GetAdditionalLight(i, inputData.positionWS.xyz);
+        Light addlight = GetAdditionalLight(i, inputData.positionWS, shadowMask);
         float aNdotL = saturate(dot(inputData.normalWS, addlight.direction));
         #if defined(_SCREEN_SPACE_OCCLUSION)
             addlight.color *= aoFactor.directAmbientOcclusion;
@@ -177,7 +179,7 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
     color += inputData.vertexLighting * brdfData.diffuse;
 #endif
 
-    color += surfaceData.emission * _EmissionColor;
+    //color += surfaceData.emission * _EmissionColor;
     
 #ifdef _UseCutoff
     clip(surfaceData.emission - _Cutoff);

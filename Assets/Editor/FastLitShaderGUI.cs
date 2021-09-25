@@ -23,6 +23,7 @@ namespace URPToon
         private struct Keywords
         {
             public static readonly string _UseSpecularMode = "_UseSpecularMode";
+            public static readonly string _UsePBRMap = "_UsePBRMap";
             public static readonly string _UseFade = "_UseFade";
             public static readonly string _UseCutoff = "_UseCutoff";
             public static readonly string _UseAlpha = "_UseAlpha";
@@ -38,8 +39,10 @@ namespace URPToon
             //Base
             public static readonly string BaseMap = "_BaseMap";
             public static readonly string BaseColor = "_BaseColor";
-            public static readonly string MaskMap = "_MaskMap";
             public static readonly string BumpMap = "_BumpMap";
+            public static readonly string MaskMap = "_MaskMap";
+            public static readonly string MetallicGlossMap = "_MetallicGlossMap";
+            public static readonly string SpecGlossMap = "_SpecGlossMap";
             
             //Cutoff
             public static readonly string Fade = "_Fade";
@@ -54,7 +57,8 @@ namespace URPToon
             public static readonly string Diffuse = "_Diffuse";
             public static readonly string Specular = "_Specular";
             public static readonly string Sheen = "_Sheen";
-            //public static readonly string SSAO = "_SSAO";
+            public static readonly string SSAO = "_SSAO";
+            public static readonly string ShadowAttenuation = "_ShadowAttenuation";
             
             //PBR
             public static readonly string Occlusion = "_Occlusion";
@@ -99,11 +103,14 @@ namespace URPToon
         private bool _outlineFoldout;
         
         private MaterialProperty _useSpecularModeProp;
+        private MaterialProperty _usePBRMapProp;
         
         // Base
         private MaterialProperty _baseMapProp;
-        private MaterialProperty _maskMapProp;
         private MaterialProperty _bumpMapProp;
+        private MaterialProperty _maskMapProp;
+        private MaterialProperty _metallicGlossMapProp;
+        private MaterialProperty _specGlossMapProp;
         private MaterialProperty _baseColorProp;
         
         // Fade
@@ -124,6 +131,7 @@ namespace URPToon
         private MaterialProperty _specularProp;
         private MaterialProperty _sheenProp;
         private MaterialProperty _SSAOProp;
+        private MaterialProperty _shadowAttenuationProp;
         
         // PBR
         private MaterialProperty _receiveShadowProp;
@@ -159,8 +167,8 @@ namespace URPToon
         
         protected override void OnShaderGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            //Cutoff
             _useSpecularModeProp = FindProperty(Keywords._UseSpecularMode, properties, false);
+            _usePBRMapProp = FindProperty(Keywords._UsePBRMap, properties, false);
             
             //Foldout
             _baseFoldOut = GetFoldoutState(materialEditor, Styles.BaseFold.text);
@@ -170,8 +178,10 @@ namespace URPToon
             
             // Base
             _baseMapProp = FindProperty(PropertyNames.BaseMap, properties, false);
-            _maskMapProp = FindProperty(PropertyNames.MaskMap, properties, false);
             _bumpMapProp = FindProperty(PropertyNames.BumpMap, properties, false);
+            _maskMapProp = FindProperty(PropertyNames.MaskMap, properties, false);
+            _metallicGlossMapProp = FindProperty(PropertyNames.MetallicGlossMap, properties, false);
+            _specGlossMapProp = FindProperty(PropertyNames.SpecGlossMap, properties, false);
             _baseColorProp = FindProperty(PropertyNames.BaseColor, properties, false);
             
             // Fade
@@ -191,7 +201,8 @@ namespace URPToon
             _diffuseProp = FindProperty(PropertyNames.Diffuse, properties, false);
             _specularProp = FindProperty(PropertyNames.Specular, properties, false);
             _sheenProp = FindProperty(PropertyNames.Sheen, properties, false);
-            //_SSAOProp = FindProperty(PropertyNames.SSAO, properties, false);
+            _SSAOProp = FindProperty(PropertyNames.SSAO, properties, false);
+            _shadowAttenuationProp = FindProperty(PropertyNames.ShadowAttenuation, properties, false);
             
             //PBR
             _receiveShadowProp = FindProperty(Keywords._ReceiveShadow, properties, false);
@@ -228,10 +239,15 @@ namespace URPToon
 
         #region Properties
 
+        public override void MaterialChanged(Material material)
+        {
+            
+        }
         
         private void DrawProperties()
         {
             DrawKeyword(Keywords._UseSpecularMode, _useSpecularModeProp);
+            DrawKeyword(Keywords._UsePBRMap, _usePBRMapProp);
             
             //DrawFoldout(Styles.BaseFold.text, ref _baseFoldOut, DrawBaseProperties);
             DrawBaseProperties();
@@ -272,8 +288,15 @@ namespace URPToon
             {
                 DrawColorProperty(_baseColorProp);
                 DrawTextureProperty(_baseMapProp);
-                DrawTextureProperty(_maskMapProp);
                 DrawTextureProperty(_bumpMapProp);
+                if (IsKeywordEnable(_usePBRMapProp))
+                {
+                    DrawTextureProperty(_metallicGlossMapProp);
+                    DrawTextureProperty(_specGlossMapProp);
+                }
+                else
+                    DrawTextureProperty(_maskMapProp);
+                
             }
         }
         
@@ -288,7 +311,8 @@ namespace URPToon
                     DrawSliderProperty(_diffuseProp);
                     DrawSliderProperty(_specularProp);
                     DrawSliderProperty(_sheenProp);
-                    //DrawSliderProperty(_SSAOProp);
+                    DrawSliderProperty(_SSAOProp);
+                    DrawSliderProperty(_shadowAttenuationProp);
                     EditorGUILayout.Space();
                 }
                 EndKeyWordGroup();
@@ -297,6 +321,7 @@ namespace URPToon
             // PBR
             {
                 DrawSliderProperty(_occlusionProp);
+                
                 if (IsKeywordEnable(_useSpecularModeProp))
                     DrawColorProperty(_specularColorProp);
                 else

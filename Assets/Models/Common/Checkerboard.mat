@@ -130,7 +130,7 @@ Material:
     - _SampleGI: 0
     - _ShadowArea: 0.5
     - _ShadowSmooth: 0.5
-    - _Smoothness: 0.5
+    - _Smoothness: 0.359
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SpecularRange: 0.5
