@@ -61,6 +61,22 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
         float3 lutSss = SAMPLE_TEXTURE2D(_SSSLUT, sampler_SSSLUT, float2(min(NdotL, surfaceData.subsurfaceRange), min(cur, surfaceData.subsurfaceRange))).rgb;
         return lerp(0, VoL * lutSss, surfaceData.subsurface);
     }
+    
+    float3 SubsurfaceScattering(DisneyInputData inputData, DisneySurfaceData surfaceData, Light light)
+    {
+        float3 L = light.direction;
+        float3 N = inputData.normalWS;
+        float3 V = inputData.viewDirectionWS;
+        
+        float3 frontLitDir  = normalize(N * surfaceData.curveFactor - L);
+        float3 backLitDir   = normalize(N * surfaceData.subsurfaceRange + L);
+        float frontSSS      = saturate(dot(V, -frontLitDir));
+        float backSSS       = saturate(dot(V, -backLitDir));
+        float sss           = saturate(frontSSS * surfaceData.sssOffset + backLitDir);
+        float sssPow        = saturate(pow(sss, surfaceData.sssPower));
+        float3 result       = lerp(surfaceData.sssColor, light.color, sssPow) * surfaceData.subsurface;
+        return result;
+    }
 #endif
 
 #ifdef _UseAnisotropic 
@@ -168,11 +184,11 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
         color += FastDirectLight(brdfData, surfaceData, inputData, addlight, aNdotL, 1);
 #ifdef _UseSSS
         //half3 screenUV = inputData.positionSS.xyz / inputData.positionSS.w;
-        sssColor +=  FastSubsurfaceScattering(inputData, surfaceData, addlight); 
+        sssColor +=  SubsurfaceScattering(inputData, surfaceData, addlight); 
         color += sssColor;
 #endif
     }
-    //return float4(sssColor,1);
+    return float4(sssColor,1);
 #endif
 
 #ifdef _ADDITIONAL_LIGHTS_VERTEX

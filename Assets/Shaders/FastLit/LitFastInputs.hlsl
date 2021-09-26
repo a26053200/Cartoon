@@ -62,8 +62,11 @@ CBUFFER_START(UnityPerMaterial)
     
     // SSS
     float _Subsurface;
-    float4 _SSSLUT_ST;// _SSSColor;
+    float4 _SSSLUT_ST;
+    float4 _SSSColor;
     float _CurveFactor;
+    float _SSSPower;
+    float _SSSOffset;
     float _SubsurfaceRange;// _SSSPower, _SSSOffset, _SSSScale;
     
 CBUFFER_END
@@ -134,6 +137,9 @@ struct DisneySurfaceData
     float   subsurface;
     float   curveFactor;
     float   subsurfaceRange;
+    float   sssOffset;
+    float   sssPower;
+    float3  sssColor;
 #endif
     // _EnableAdvanced
     float   specular;
@@ -173,6 +179,7 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
 #ifdef _UsePBRMap
     float4 materialMap = SAMPLE_TEXTURE2D(_MetallicGlossMap, sampler_MetallicGlossMap, uv);
     float4 specularMap = SAMPLE_TEXTURE2D(_SpecGlossMap, sampler_SpecGlossMap, uv);
+    half g = 1;
     #ifdef _UseSpecularMode
         specGloss.rgb = specularMap.rgb * _SpecularColor.rgb;;
         specGloss.a = 1 - specularMap.r; //smoothness
@@ -209,9 +216,12 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.occlusion    = lerp(1, b, _Occlusion);
     
 #ifdef _UseSSS 
-    outSurfaceData.subsurface = _Subsurface * (1 - g);
+    outSurfaceData.subsurface = lerp(0, 1 - g, _Subsurface);
     outSurfaceData.curveFactor = _CurveFactor;
     outSurfaceData.subsurfaceRange = _SubsurfaceRange;
+    outSurfaceData.sssPower = _SSSPower;
+    outSurfaceData.sssOffset = _SSSOffset;
+    outSurfaceData.sssColor = _SSSColor;
 #endif    
  
 #ifdef _EnableAdvanced    

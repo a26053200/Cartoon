@@ -11,8 +11,8 @@ Shader "FastLit/FastLit"
         [MainColor] _BaseColor("Color", Color) = (1,1,1,1)
         [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
         _BumpMap("Normal Map", 2D) = "bump" {}
-        _MaskMap("Mask Map", 2D) = "white" {}
-        _MetallicGlossMap("Metallic Map", 2D) = "white" {}
+        _MaskMap("Mask Map", 2D) = "black" {}
+        _MetallicGlossMap("Metallic Map", 2D) = "black" {}
         _SpecGlossMap("Specular Map", 2D) = "white" {}
         //[Space]
         //[Header(Fade)][Space]
@@ -49,12 +49,12 @@ Shader "FastLit/FastLit"
         //[Space]
         [Toggle(Use SSS)]_UseSSS("Use SSS", Float) = 0
         _Subsurface("Subsurface",       Range(0,1)) = 0.5
-        _CurveFactor("CurveFactor",       Range(0,1)) = 0.5
-        _SSSLUT ("SSS LUT", 2D) = "white" {}
-        _SubsurfaceRange("Range",       Range(0.001,1)) = 0.5
-        //_SSSPower("Scaterring Power",       Range(0.001,10)) = 0.5
-        //_SSSOffset("Offset",       Range(0,2)) = 0.5
-        //_SSSColor("SSS Color",       Color) = (1,1,1,1)
+        _CurveFactor("front",       Range(0,1)) = 0.5
+        //_SSSLUT ("SSS LUT", 2D) = "white" {}
+        _SubsurfaceRange("back",       Range(0.001,1)) = 0.5
+        _SSSPower("Scaterring Power",       Range(0.001,10)) = 0.5
+        _SSSOffset("front Strength",       Range(0,2)) = 0.5
+        _SSSColor("SSS Color",       Color) = (1,1,1,1)
         
         //[Space]
         [Toggle(Use Anisotropic)]_UseAnisotropic("Use Anisotropic", Float) = 0
