@@ -23,6 +23,7 @@ struct VertexPositionInputs
     TEXTURE2D(_SpecGlossMap);    SAMPLER(sampler_SpecGlossMap);
     TEXTURE2D(_ShiftTex);   SAMPLER(sampler_ShiftTex);
     TEXTURE2D(_SSSLUT);     SAMPLER(sampler_SSSLUT);
+    TEXTURE2D(_ThicknessMap);     SAMPLER(sampler_ThicknessMap);
     TEXTURE2D_X_FLOAT(_CameraDepthTexture); SAMPLER(sampler_CameraDepthTexture);
     
 CBUFFER_START(UnityPerMaterial)
@@ -140,6 +141,7 @@ struct DisneySurfaceData
     float   sssOffset;
     float   sssPower;
     float3  sssColor;
+    float   thickness;
 #endif
     // _EnableAdvanced
     float   specular;
@@ -216,12 +218,13 @@ void InitializeDisneySurfaceData(float2 uv, out DisneySurfaceData outSurfaceData
     outSurfaceData.occlusion    = lerp(1, b, _Occlusion);
     
 #ifdef _UseSSS 
-    outSurfaceData.subsurface = lerp(0, 1 - g, _Subsurface);
+    outSurfaceData.subsurface = _Subsurface;//lerp(0, 1 - g, _Subsurface);
     outSurfaceData.curveFactor = _CurveFactor;
     outSurfaceData.subsurfaceRange = _SubsurfaceRange;
     outSurfaceData.sssPower = _SSSPower;
     outSurfaceData.sssOffset = _SSSOffset;
     outSurfaceData.sssColor = _SSSColor;
+    outSurfaceData.thickness = SAMPLE_TEXTURE2D(_ThicknessMap, sampler_ThicknessMap, uv).r;
 #endif    
  
 #ifdef _EnableAdvanced    

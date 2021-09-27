@@ -62,12 +62,12 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
         return lerp(0, VoL * lutSss, surfaceData.subsurface);
     }
     
-    float3 SubsurfaceScattering(DisneyInputData inputData, DisneySurfaceData surfaceData, Light light)
+    float3 SubsurfaceScattering(DisneyInputData inputData, DisneySurfaceData surfaceData, Light light, float3 IndirectLightResult)
     {
         float3 L = light.direction;
         float3 N = inputData.normalWS;
         float3 V = inputData.viewDirectionWS;
-        
+        /*
         float3 frontLitDir  = normalize(N * surfaceData.curveFactor - L);
         float3 backLitDir   = normalize(N * surfaceData.subsurfaceRange + L);
         float frontSSS      = saturate(dot(V, -frontLitDir));
@@ -75,6 +75,23 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
         float sss           = saturate(frontSSS * surfaceData.sssOffset + backLitDir);
         float sssPow        = saturate(pow(sss, surfaceData.sssPower));
         float3 result       = lerp(surfaceData.sssColor, light.color, sssPow) * surfaceData.subsurface;
+        return result;
+        */
+        /*
+        #if !DIRECTIONAL
+        float3 lightAtten = gi.light.color;
+        #else
+        float3 lightAtten = lerp( _LightColor0.rgb, gi.light.color, _TransShadow );
+        #endif
+        half3 lightDir = gi.light.dir + s.Normal * _TransNormalDistortion;
+        half transVdotL = pow( saturate( dot( viewDir, -lightDir ) ), _TransScattering );
+        half3 translucency = lightAtten * (transVdotL * _TransDirect + gi.indirect.diffuse * _TransAmbient) * s.Translucency;
+        half4 c = half4( s.Albedo * translucency * _Translucency, 0 );
+		*/	
+        half3 lightDir = L + N * surfaceData.sssOffset;
+        half transVdotL = pow(saturate(dot(V, -lightDir)), surfaceData.sssPower);
+        half3 translucency = light.color * (transVdotL * surfaceData.curveFactor + IndirectLightResult * surfaceData.subsurfaceRange);
+        half3 result = surfaceData.albedo * translucency * surfaceData.subsurface * surfaceData.thickness;
         return result;
     }
 #endif
@@ -170,7 +187,11 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
     float3 IndirectLightResult = GlobalIllumination(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS);
     //return float4(IndirectLightResult,1);
     color += lerp(0, IndirectLightResult, surfaceData.sheen);
-    
+    /*
+    float3 sssColor =  SubsurfaceScattering(inputData, surfaceData, mainLight, IndirectLightResult); 
+    return float4(sssColor,1);
+    color += sssColor;
+    */
 #ifdef _ADDITIONAL_LIGHTS
     float3 sssColor = 0;
     int pixelLightCount = GetAdditionalLightsCount();
@@ -178,17 +199,18 @@ float4 FastBRDFFragment(DisneyInputData inputData, DisneySurfaceData surfaceData
     {
         Light addlight = GetAdditionalLight(i, inputData.positionWS, shadowMask);
         float aNdotL = saturate(dot(inputData.normalWS, addlight.direction));
+        float addlightAttenuation = addlight.shadowAttenuation * addlight.distanceAttenuation;
         #if defined(_SCREEN_SPACE_OCCLUSION)
             addlight.color *= aoFactor.directAmbientOcclusion;
         #endif
-        color += FastDirectLight(brdfData, surfaceData, inputData, addlight, aNdotL, 1);
+        color += FastDirectLight(brdfData, surfaceData, inputData, addlight, aNdotL, addlightAttenuation);
 #ifdef _UseSSS
         //half3 screenUV = inputData.positionSS.xyz / inputData.positionSS.w;
-        sssColor +=  SubsurfaceScattering(inputData, surfaceData, addlight); 
+        sssColor +=  SubsurfaceScattering(inputData, surfaceData, addlight, IndirectLightResult); 
         color += sssColor;
 #endif
     }
-    return float4(sssColor,1);
+    //return float4(sssColor,1);
 #endif
 
 #ifdef _ADDITIONAL_LIGHTS_VERTEX

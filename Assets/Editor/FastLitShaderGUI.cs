@@ -74,6 +74,7 @@ namespace URPToon
             public static readonly string SSSColor = "_SSSColor";
             public static readonly string CurveFactor = "_CurveFactor";
             public static readonly string SSSLUT = "_SSSLUT";
+            public static readonly string ThicknessMap = "_ThicknessMap";
             
             //Anisotropic
             public static readonly string Anisotropic = "_Anisotropic";
@@ -148,6 +149,7 @@ namespace URPToon
         private MaterialProperty _SSSOffsetProp;
         private MaterialProperty _SSSColorProp;
         private MaterialProperty _SSSLUTProp;
+        private MaterialProperty _thicknessMapProp;
         private MaterialProperty _CurveFactorProp;
         
         // Anisotropic
@@ -220,6 +222,7 @@ namespace URPToon
             _SSSColorProp = FindProperty(PropertyNames.SSSColor, properties, false);
             _CurveFactorProp = FindProperty(PropertyNames.CurveFactor, properties, false);
             _SSSLUTProp = FindProperty(PropertyNames.SSSLUT, properties, false);
+            _thicknessMapProp = FindProperty(PropertyNames.ThicknessMap, properties, false);
             
             //Anisotropic
             _useAnisotropicProp = FindProperty(Keywords._UseAnisotropic, properties, false);
@@ -341,7 +344,8 @@ namespace URPToon
                     DrawSliderProperty(_SSSPowerProp);
                     DrawSliderProperty(_SSSOffsetProp);
                     DrawSliderProperty(_CurveFactorProp);
-                    DrawTextureProperty(_SSSLUTProp);
+                    //DrawTextureProperty(_SSSLUTProp);
+                    DrawTextureProperty(_thicknessMapProp);
                     EditorGUILayout.Space();
                 }
                 EndKeyWordGroup();
