@@ -32,9 +32,9 @@ Shader "FastLit/FastLit"
         //[Space]
         //[Header(Advanced)][Space]
         [Toggle(Enable Advanced)]_EnableAdvanced("Use Advanced", Float) = 0
-        _Diffuse ("Diffuse",            Range(0,2)) = 1
-        _Specular ("Specular",          Range(0,2)) = 1
-        _Sheen ("Sheen",                Range(0,1)) = 1
+        _Diffuse ("Diffuse",            Range(0,4)) = 1
+        _Specular ("Specular",          Range(0,4)) = 1
+        _Sheen ("Sheen",                Range(0,4)) = 1
         _SSAO ("SSAO",                  Range(0,1)) = 1
         _ShadowAttenuation ("Shadow Attenuation",                Range(0,1)) = 1
         

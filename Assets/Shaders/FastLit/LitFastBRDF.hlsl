@@ -42,11 +42,11 @@ float3 FastDirectLight(BRDFData brdfData, DisneySurfaceData surfaceData, DisneyI
     float3 specColor = SpecularResult;// * lightColor * NdotL * PI;
     float3 diffColor = brdfData.diffuse;
     float3 DirectLightResult = diffColor * surfaceData.diffuse + brdfData.specular * specColor * surfaceData.specular;
+    float lightAtten = 1;
 #if _ReceiveShadow
-    DirectLightResult = DirectLightResult * light.color * NdotL * shadowAttenuation;
-#else
-    DirectLightResult = DirectLightResult * light.color * NdotL;
+    lightAtten = shadowAttenuation;
 #endif
+    DirectLightResult = DirectLightResult * light.color * (NdotL) * lightAtten;
     return DirectLightResult;
 }
 
